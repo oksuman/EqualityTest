@@ -48,10 +48,10 @@ PAILLIER::~PAILLIER()
 {
     BN_CTX_free(bn_ctx);
 }
-void PAILLIER::KeyGen(PK &pk, SK &sk)
+void PAILLIER::KeyGen(PK &pk, SK &sk, int lambda)
 {
-    BIGNUM *p = generate_random_prime1();
-    BIGNUM *q = generate_random_prime1();
+    BIGNUM *p = generate_random_prime1(lambda);
+    BIGNUM *q = generate_random_prime1(lambda);
     BIGNUM *n_2 = BN_new();
 
     pk.n = BN_new();
@@ -60,7 +60,6 @@ void PAILLIER::KeyGen(PK &pk, SK &sk)
     sk.mu = BN_new();
     BN_mul(pk.n, p, q, bn_ctx);
     BN_add(pk.g, pk.n, BN_value_one());
-
 
     BN_sub(p, p, BN_value_one()); // p = p-1
     BN_sub(q, q, BN_value_one()); // q = q-1
@@ -207,7 +206,7 @@ BIGNUM * PAILLIER::Sub(const PK pk, const BIGNUM *c1, const BIGNUM * c2)
 
     BN_mod_inverse(r_c2, c2, n_2, bn_ctx); // r_c2 = 1 / c2
 
-    BN_mod_mul(ret, c1, r_c2, n_2, bn_ctx);  // ret = c1 * c2 mod n_2
+    BN_mod_mul(ret, c1, r_c2, n_2, bn_ctx);  // ret = c1 * r_c2 mod n_2
 
     BN_free(r_c2);
     BN_free(n_2);

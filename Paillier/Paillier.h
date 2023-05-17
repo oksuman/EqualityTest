@@ -1,7 +1,7 @@
 #ifndef __PAILLIER_H__
 #define __PAILLIER_H__
 
-#define STR_LENGTH 1024
+#define STR_LENGTH 1536
 
 #include <openssl/bn.h>
 #include <openssl/obj_mac.h>
@@ -48,7 +48,7 @@ extern "C"
         BIGNUM *generate_random_element1(const PK pk);
         unsigned char *generate_random_element2(const PK pk);
 
-        void KeyGen(PK &pk, SK &sk);
+        void KeyGen(PK &pk, SK &sk, int lambda);
 
         BIGNUM * Enc(const PK pk, const BIGNUM * m);
         unsigned char * Enc(const PK pk, const unsigned char * M);

@@ -18,9 +18,12 @@ int main(int argc, char* argv[]){
         */
     system_clock::time_point Pa_total_start_time = system_clock::now();
     srand((unsigned int)time(NULL));
-    for(int k=0; k<1000; k++){
-        int m_Alice = rand() % 2048;
-        int m_Bob = rand() % 2048;
+    for(int k=0; k<1; k++){
+        // int m_Alice = rand() % 2048;
+        // int m_Bob = rand() % 2048;
+        
+        int m_Alice = 300;
+        int m_Bob = 300;
         
         int remainder;
         int Alice_size, Bob_size;
@@ -43,8 +46,8 @@ int main(int argc, char* argv[]){
         else
             Bob_size = 0;
        
-        unsigned char hex_m_Alice[4] = {'\0','\0','\0','\0'};
-        unsigned char hex_m_Bob[4] = {'\0','\0','\0','\0'};
+        unsigned char hex_m_Alice[5] = {'\0','\0','\0','\0','\0'};
+        unsigned char hex_m_Bob[5] = {'\0','\0','\0','\0','\0'};
        
         for(int i=0; i<Alice_size; i++){
             remainder = m_Alice % 16;
@@ -75,9 +78,10 @@ int main(int argc, char* argv[]){
        
         // Step 1
         CIPHERTEXT *c_Alice = ece->Enc(hex_m_Alice);
-
+        cout << "A : " << ece->Dec(*c_Alice) << endl;
         // Step 2
         CIPHERTEXT *c_Bob = ece->Enc(hex_m_Bob);
+        cout << "B : " << ece->Dec(*c_Bob) << endl;
         unsigned char *s = ece->getRandomElement();
         CIPHERTEXT *c_sub = ece->Sub(*c_Bob, *c_Alice);
         CIPHERTEXT *c_res = ece->Scalar_Mul(s, *c_sub);
