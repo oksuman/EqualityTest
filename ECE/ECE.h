@@ -11,11 +11,14 @@ extern "C"
 {
 #endif
 
+    #ifndef _HANDLE_ERRORS_
+    #define _HANDLE_ERRORS_
     inline void handleErrors()
     {
         ERR_print_errors_fp(stderr);
         abort();
     }
+    #endif
 
     typedef struct
     {

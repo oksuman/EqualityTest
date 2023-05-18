@@ -49,7 +49,7 @@ unsigned char *GM::generate_random_element2(const BIGNUM *n)
     return ret;
 }
 
-void GM::KeyGen(int lambda, PK &pk, SK &sk)
+void GM::KeyGen(int lambda, GM_PK &pk, GM_SK &sk)
 {
     BIGNUM *p = generate_random_prime1(lambda);
     BIGNUM *q = generate_random_prime1(lambda);
@@ -87,32 +87,7 @@ void GM::KeyGen(int lambda, PK &pk, SK &sk)
     sk.q = q;
 }
 
-// BIGNUM *GM::Enc(const PK pk, const BIGNUM *m)
-// {
-//     BIGNUM *c = BN_new();
-//     BIGNUM *r = BN_new();
-//     BIGNUM *gcd = BN_new();
-//     BIGNUM *g_to_m = BN_new();
-//     BIGNUM *r_to_2 = BN_new();
-//     BIGNUM *two = BN_new();
-
-//     do
-//     {
-//         r = generate_random_element1(pk.n);
-
-//         BN_gcd(gcd, r, pk.n, bn_ctx);
-
-//     } while (BN_cmp(gcd, BN_value_one()));
-
-//     BN_dec2bn(&two, "2");
-
-//     BN_mod_exp(g_to_m, pk.g, m, pk.n, bn_ctx); // g_to_m = g^m mod n
-//     BN_mod_exp(r_to_2, r, two, pk.n, bn_ctx); // r_to_2 = r^2 mod n
-//     BN_mod_mul(c, g_to_m, r_to_2, pk.n, bn_ctx); // c = g^m * r^2 mod n
-
-//     return c;
-// }
-unsigned char *GM::Enc(const PK pk, const char M){
+unsigned char *GM::Enc(const GM_PK pk, const char M){
     unsigned char *C = new unsigned char[STR_LENGTH];
     memset(C, 0x00, STR_LENGTH);
 
@@ -135,13 +110,13 @@ unsigned char *GM::Enc(const PK pk, const char M){
 
     // M == 1
     // c = g * r^2 
-    if(M == 1){
+    if(M == '1'){
         BN_mod_mul(c, pk.g, r_to_2, pk.n, bn_ctx);
         strcpy((char *)C, BN_bn2hex(c));
     }
-    // M == 0 이거나 M == -1 
+    // M == 0
     // c = r^2
-    else 
+    else
         strcpy((char *)C, BN_bn2hex(r_to_2));
     
     return C;
@@ -149,9 +124,8 @@ unsigned char *GM::Enc(const PK pk, const char M){
 
 
 
-bool GM::Dec(const PK pk, const SK sk, const BIGNUM *c)
+bool GM::Dec(const GM_PK pk, const GM_SK sk, const BIGNUM *c)
 {
-    BIGNUM *m = BN_new();
     BIGNUM *cp = BN_new();
     BIGNUM *cq = BN_new();
     BIGNUM *p_exp = BN_new();
@@ -177,7 +151,7 @@ bool GM::Dec(const PK pk, const SK sk, const BIGNUM *c)
     else
         return true;
 }
-bool GM::Dec(const PK pk, const SK sk, const unsigned char *C)
+bool GM::Dec(const GM_PK pk, const GM_SK sk, const unsigned char *C)
 {
     BIGNUM *c = BN_new();
 
@@ -186,7 +160,7 @@ bool GM::Dec(const PK pk, const SK sk, const unsigned char *C)
     return Dec(pk, sk, c);
 }
 
-BIGNUM *GM::XOR(const PK pk, const BIGNUM *c1, const BIGNUM *c2)
+BIGNUM *GM::XOR(const GM_PK pk, const BIGNUM *c1, const BIGNUM *c2)
 {
     BIGNUM* c = BN_new();
 
@@ -195,7 +169,7 @@ BIGNUM *GM::XOR(const PK pk, const BIGNUM *c1, const BIGNUM *c2)
     return c;
 }
 
-unsigned char *GM::XOR(const PK pk, unsigned char *C1, unsigned char *C2)
+unsigned char *GM::XOR(const GM_PK pk, unsigned char *C1, unsigned char *C2)
 {
     BIGNUM *c1 = BN_new();
     BIGNUM *c2 = BN_new();

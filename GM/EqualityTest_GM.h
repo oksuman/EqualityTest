@@ -1,21 +1,22 @@
-#ifndef TEST_PAILLIER_H
-#define TEST_PAILLIER_H
+#ifndef TEST_GM_H
+#define TEST_GM_H
 
-#define MESSAGE_HEX_SIZE 10
+#define MESSAGE_BIN_SIZE 40
 
 #include <chrono>
-#include "Paillier.h"
+#include <string>
+#include "GM.h"
 using namespace std;
 using namespace chrono;
 
-class Paillier_EqualityTest{
+class GM_EqualityTest{
     private:
-        PAILLIER paillier;
-        PAILLIER_PK publicKey;
-        PAILLIER_SK secretKey;
+        GM gm; 
 
-        const unsigned char* aliceHexPlainText;
-        const unsigned char* bobHexPlainText;
+        GM_PK publicKey;
+        GM_SK secretKey;
+        string aliceBinPlainText;
+        string bobBinPlainText;
 
         duration<double> encodingTime;  // random number -> message
         duration<double> initialTime;   // Alice's key generation
@@ -25,8 +26,8 @@ class Paillier_EqualityTest{
         duration<double> totalTime;     // step1~step3
 
     public:
-        Paillier_EqualityTest();
-        void keyGen(int lambda);
+        GM_EqualityTest();
+        void keyGen(int lambda);  
         bool equalityTest(int aliceNumber, int bobNumber);
         void printInitialTime();
         void printEncodingTime();
@@ -36,4 +37,3 @@ class Paillier_EqualityTest{
         void printTotalTime();
 };
 #endif
-

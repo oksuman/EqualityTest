@@ -21,7 +21,7 @@ unsigned char * PAILLIER::generate_random_prime2(int len = 1024)
     return ret;
 }
 
-BIGNUM *PAILLIER::generate_random_element1(const PK pk)
+BIGNUM *PAILLIER::generate_random_element1(const PAILLIER_PK pk)
 {
     BIGNUM *random = BN_new();
     if (!BN_rand_range(random, pk.n))
@@ -29,7 +29,7 @@ BIGNUM *PAILLIER::generate_random_element1(const PK pk)
     return random;
 }
 
-unsigned char * PAILLIER::generate_random_element2(const PK pk)
+unsigned char * PAILLIER::generate_random_element2(const PAILLIER_PK pk)
 {
     unsigned char * ret = new unsigned char[STR_LENGTH];
     memset(ret, 0x00, STR_LENGTH);
@@ -48,7 +48,7 @@ PAILLIER::~PAILLIER()
 {
     BN_CTX_free(bn_ctx);
 }
-void PAILLIER::KeyGen(PK &pk, SK &sk, int lambda)
+void PAILLIER::KeyGen(PAILLIER_PK &pk, PAILLIER_SK &sk, int lambda)
 {
     BIGNUM *p = generate_random_prime1(lambda);
     BIGNUM *q = generate_random_prime1(lambda);
@@ -78,7 +78,7 @@ void PAILLIER::KeyGen(PK &pk, SK &sk, int lambda)
 }
 
 
-BIGNUM * PAILLIER::Enc(const PK pk, const BIGNUM * m)
+BIGNUM * PAILLIER::Enc(const PAILLIER_PK pk, const BIGNUM * m)
 {
     BIGNUM *n_2 = BN_new();
     BIGNUM *g_to_m = BN_new();
@@ -102,7 +102,7 @@ BIGNUM * PAILLIER::Enc(const PK pk, const BIGNUM * m)
     return c;
 }
 
-unsigned char *PAILLIER::Enc(const PK pk, const unsigned char *M)
+unsigned char *PAILLIER::Enc(const PAILLIER_PK pk, const unsigned char *M)
 {
     BIGNUM *m = BN_new();
     unsigned char *C = new unsigned char[STR_LENGTH];
@@ -118,7 +118,7 @@ unsigned char *PAILLIER::Enc(const PK pk, const unsigned char *M)
     return C;
 }
 
-BIGNUM * PAILLIER::Dec(const PK pk, const SK sk, const BIGNUM* c)
+BIGNUM * PAILLIER::Dec(const PAILLIER_PK pk, const PAILLIER_SK sk, const BIGNUM* c)
 {
     BIGNUM *m = BN_new();
     BIGNUM *c_lambda = BN_new();
@@ -136,7 +136,7 @@ BIGNUM * PAILLIER::Dec(const PK pk, const SK sk, const BIGNUM* c)
     
     return m;
 }
-unsigned char * PAILLIER::Dec(const PK pk, const SK sk, const unsigned char* C)
+unsigned char * PAILLIER::Dec(const PAILLIER_PK pk, const PAILLIER_SK sk, const unsigned char* C)
 {
     BIGNUM* c = BN_new();
     unsigned char* M = new unsigned char[STR_LENGTH];
@@ -161,7 +161,7 @@ BIGNUM * PAILLIER::L(const BIGNUM * x, const BIGNUM * n)
 }
 
 
-BIGNUM * PAILLIER::Add(const PK pk, const BIGNUM *c1, const BIGNUM * c2)
+BIGNUM * PAILLIER::Add(const PAILLIER_PK pk, const BIGNUM *c1, const BIGNUM * c2)
 {
     BIGNUM * ret = BN_new();
     BIGNUM * n_2 = BN_new();
@@ -175,7 +175,7 @@ BIGNUM * PAILLIER::Add(const PK pk, const BIGNUM *c1, const BIGNUM * c2)
     return ret;
 }
 
-unsigned char * PAILLIER::Add(const PK pk, unsigned char * C1, unsigned char * C2)
+unsigned char * PAILLIER::Add(const PAILLIER_PK pk, unsigned char * C1, unsigned char * C2)
 {
     BIGNUM* c1 = BN_new();
     BIGNUM* c2 = BN_new();
@@ -196,7 +196,7 @@ unsigned char * PAILLIER::Add(const PK pk, unsigned char * C1, unsigned char * C
 }
 
 // c1 - c2 
-BIGNUM * PAILLIER::Sub(const PK pk, const BIGNUM *c1, const BIGNUM * c2)
+BIGNUM * PAILLIER::Sub(const PAILLIER_PK pk, const BIGNUM *c1, const BIGNUM * c2)
 {
     BIGNUM * ret = BN_new();
     BIGNUM * n_2 = BN_new();
@@ -214,7 +214,7 @@ BIGNUM * PAILLIER::Sub(const PK pk, const BIGNUM *c1, const BIGNUM * c2)
     return ret;
 }
 
-unsigned char * PAILLIER::Sub(const PK pk, unsigned char * C1, unsigned char * C2)
+unsigned char * PAILLIER::Sub(const PAILLIER_PK pk, unsigned char * C1, unsigned char * C2)
 {
     BIGNUM* c1 = BN_new();
     BIGNUM* c2 = BN_new();
@@ -236,7 +236,7 @@ unsigned char * PAILLIER::Sub(const PK pk, unsigned char * C1, unsigned char * C
 
 
 
-BIGNUM * PAILLIER::Scalar_Mul(const PK pk, const BIGNUM * s, const BIGNUM * c)
+BIGNUM * PAILLIER::Scalar_Mul(const PAILLIER_PK pk, const BIGNUM * s, const BIGNUM * c)
 {
     BIGNUM *ret = BN_new();
     BIGNUM *n_2 = BN_new();
@@ -250,7 +250,7 @@ BIGNUM * PAILLIER::Scalar_Mul(const PK pk, const BIGNUM * s, const BIGNUM * c)
     return ret;
 }
 
-unsigned char * PAILLIER::Scalar_Mul(const PK pk, const unsigned char * S, const unsigned char * C)
+unsigned char * PAILLIER::Scalar_Mul(const PAILLIER_PK pk, const unsigned char * S, const unsigned char * C)
 {
     BIGNUM *s = BN_new();
     BIGNUM *c = BN_new();

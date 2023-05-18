@@ -1,18 +1,16 @@
-#ifndef TEST_PAILLIER_H
-#define TEST_PAILLIER_H
+#ifndef TEST_ECE_H
+#define TEST_ECE_H
 
 #define MESSAGE_HEX_SIZE 10
 
 #include <chrono>
-#include "Paillier.h"
+#include "ECE.h"
 using namespace std;
 using namespace chrono;
 
-class Paillier_EqualityTest{
+class ECE_EqualityTest{
     private:
-        PAILLIER paillier;
-        PAILLIER_PK publicKey;
-        PAILLIER_SK secretKey;
+        ECE *ece; 
 
         const unsigned char* aliceHexPlainText;
         const unsigned char* bobHexPlainText;
@@ -25,8 +23,8 @@ class Paillier_EqualityTest{
         duration<double> totalTime;     // step1~step3
 
     public:
-        Paillier_EqualityTest();
-        void keyGen(int lambda);
+        ECE_EqualityTest();
+        void keyGen();  // P-256 고정 128bit security 
         bool equalityTest(int aliceNumber, int bobNumber);
         void printInitialTime();
         void printEncodingTime();
@@ -36,4 +34,3 @@ class Paillier_EqualityTest{
         void printTotalTime();
 };
 #endif
-
