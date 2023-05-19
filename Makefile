@@ -6,7 +6,7 @@ CFLAGS = -std=c++11 -Wall
 LIBS = -lssl -lcrypto
 
 # 빌드 대상 설정
-TARGET = test
+TARGET = ProtocolTest
 
 # 소스 파일 및 객체 파일 목록 설정
 SRCS =  ProtocolTest.cpp \
