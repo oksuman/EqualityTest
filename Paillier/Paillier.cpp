@@ -1,10 +1,8 @@
-// g++ -o Paillier Paillier.cpp -lssl -lcrypto
-
 #include <iostream>
 #include <cstring>
 #include "Paillier.h"
 
-BIGNUM *PAILLIER::generate_random_prime1(int len = 1024)
+BIGNUM * PAILLIER::generate_random_prime1(int len = 1024)
 {
     BIGNUM *prime = BN_new();
     BN_generate_prime_ex(prime, len, 0, NULL, NULL, NULL);
