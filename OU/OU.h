@@ -37,6 +37,7 @@ extern "C"
         OU(int _lambda);
         ~OU();
 
+        void set_lambda(int lambda);
         // (x-1)/p    
         BIGNUM *L(const BIGNUM * x, const BIGNUM * p); 
         

@@ -10,7 +10,6 @@ using namespace std;
 using namespace chrono;
 
 OU_EqualityTest::OU_EqualityTest(int lambda){
-    OU ou = OU(lambda);
 
     aliceHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
     bobHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
@@ -25,6 +24,7 @@ OU_EqualityTest::OU_EqualityTest(int lambda){
 
 void OU_EqualityTest::keyGen(){
     system_clock::time_point initialStartTime = system_clock::now();
+    ou.set_lambda(1024);
     ou.KeyGen(this->publicKey, this->secretKey);
     system_clock::time_point initialEndTime = system_clock::now();
     initialTime = duration_cast<milliseconds>(initialEndTime - initialStartTime);
@@ -34,6 +34,9 @@ bool OU_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     system_clock::time_point totalStartTime = system_clock::now();
     
     //// endcoding ////
+    cout << "OU encoding " << endl;
+
+    /////
     system_clock::time_point encodingStartTime = system_clock::now();
     stringstream stream1;
     stringstream stream2;
@@ -93,6 +96,5 @@ void OU_EqualityTest::printStep3Time(){
 }
 void OU_EqualityTest::printTotalTime(){
     cout << "Okamoto Uchiyama Total Time : " << totalTime.count() << "ms" << endl;
-
 }
 

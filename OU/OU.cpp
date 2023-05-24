@@ -14,6 +14,10 @@ OU::~OU(){
     BN_CTX_free(bn_ctx);
 }
 
+void OU::set_lambda(int lambda){
+    this->lambda = lambda;
+}
+
 BIGNUM * OU::L(const BIGNUM * x, const BIGNUM * p){
     BIGNUM * ret = BN_new();
     BN_sub(ret, x, BN_value_one());
@@ -52,14 +56,18 @@ void OU::KeyGen(OU_PK &pk, OU_SK &sk){
 
     sk.p = BN_new();
     sk.q = BN_new();
-    sk.p = generate_random_prime1();   // p
-    sk.q = generate_random_prime1();   // q
-
     BIGNUM *p_2 = BN_new();                 // p^2
-    BN_sqr(p_2, sk.p, bn_ctx);
+
+    pk.n = BN_new();                       
+    std::cout << " 시작 "<< std::endl;
+    do
+    {
+        sk.p = generate_random_prime1();   // p
+        BN_sqr(p_2, sk.p, bn_ctx);
+        sk.q = generate_random_prime1();   // q
+        BN_mul(pk.n, p_2, sk.q, bn_ctx);   // n=p^2*q 
+    } while (BN_num_bits(pk.n) != 3072);
     
-    pk.n = BN_new();                        // n=p^2*q
-    BN_mul(pk.n, p_2, sk.q, bn_ctx);
     std::cout << "n 비트 수 : "<< BN_num_bits(pk.n) << std::endl;
 
     pk.g = BN_new();
@@ -67,14 +75,13 @@ void OU::KeyGen(OU_PK &pk, OU_SK &sk){
     
     BIGNUM *p_1 = BN_new(); //p-1
     BN_sub(p_1, sk.p, BN_value_one());
-
     do
     {
         //random g 선택 
         if (!BN_rand_range(pk.g, pk.n))
             handleErrors();
         BN_mod_exp(g_p, pk.g, p_1, p_2, bn_ctx); 
-    } while (BN_cmp(g_p, BN_value_one()));
+    } while (!BN_cmp(g_p, BN_value_one()));
     
     BN_free(g_p);
     pk.h = BN_new();   // h = g^n mod n

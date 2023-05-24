@@ -12,7 +12,9 @@ TARGET = ProtocolTest
 SRCS =  ProtocolTest.cpp \
 		Paillier/EqualityTest_Paillier.cpp Paillier/Paillier.cpp \
 	    ECE/EqualityTest_ECE.cpp ECE/ECE.cpp \
-		GM/EqualityTest_GM.cpp GM/GM.cpp
+		GM/EqualityTest_GM.cpp GM/GM.cpp \
+		OU/EqualityTest_OU.cpp OU/OU.cpp
+
 OBJS = $(SRCS:.cpp=.o)
 
 # 인클루드 디렉토리 설정
@@ -30,7 +32,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(INC_DIRS) -c $< -o $@
 
 # 의존성 관계 설정
-ProtocolTest.o: ProtocolTest.cpp Paillier/EqualityTest_Paillier.h ECE/EqualityTest_ECE.h GM/EqualityTest_GM.h
+ProtocolTest.o: ProtocolTest.cpp Paillier/EqualityTest_Paillier.h ECE/EqualityTest_ECE.h GM/EqualityTest_GM.h OU/EqualityTest_OU.h
 	$(CC) $(CFLAGS) $(INC_DIRS) -c ProtocolTest.cpp -o ProtocolTest.o
 
 EqualityTest_Paillier.o: Paillier/EqualityTest_Paillier.cpp Paillier/EqualityTest_Paillier.h Paillier/Paillier.h
@@ -50,7 +52,12 @@ EqualityTest_GM.o: GM/EqualityTest_GM.cpp GM/EqualityTest_GM.h GM/GM.h
 
 GM.o: GM/GM.cpp GM/GM.h
 	$(CC) $(CFLAGS) $(INC_DIRS) -c GM/GM.cpp -o GM.o
-	
+
+EqualityTest_OU.o: OU/EqualityTest_OU.cpp OU/EqualityTest_OU.h OU/OU.h
+	$(CC) $(CFLAGS) $(INC_DIRS) -c OU/EqualityTest_OU.cpp -o EqualityTest_OU.o
+
+OU.o: OU/OU.cpp OU/OU.h
+	$(CC) $(CFLAGS) $(INC_DIRS) -c OU/OU.cpp -o OU.o	
 
 # 불필요한 파일 정리 명령
 clean:
