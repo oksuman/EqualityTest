@@ -82,36 +82,158 @@ void OU::KeyGen(OU_PK &pk, OU_SK &sk){
 }
 
 BIGNUM * OU::Enc(const OU_PK pk, const BIGNUM * m){
+    //c = g^m * h^r mod n
+    BIGNUM *g_to_m = BN_new();
+    BIGNUM *h_to_r = BN_new();
+    BIGNUM *r = BN_new();   // randomly select from Zn 
+    BIGNUM *c = BN_new();
 
+    if (!BN_rand_range(r, pk.n))
+        handleErrors();
+
+    BN_mod_exp(g_to_m, pk.g, m, pk.n, bn_ctx); // g_to_m = g^m mod n
+    BN_mod_exp(h_to_r, pk.h, r, pk.n, bn_ctx); // h_to_r = h^r mod n
+    BN_mod_mul(c, g_to_m, h_to_r, pk.n, bn_ctx); // c = g_to_m * h_to_r mod n
+
+    BN_free(g_to_m);
+    BN_free(h_to_r);
+    BN_free(r);
+    
+    return c;
 }
-unsigned char * OU::Enc(const OU_PK pk, const unsigned char * M){
 
+unsigned char * OU::Enc(const OU_PK pk, const unsigned char * M){
+    BIGNUM *m = BN_new();
+    unsigned char *C = new unsigned char[3*lambda/4];
+    memset(C, 0x00, 3*lambda/4);
+
+    BN_hex2bn(&m, (char *)M);
+
+    strcpy((char *)C, BN_bn2hex(Enc(pk, m)));
+
+    BN_free(m);
+
+    return C;
 }
 
 BIGNUM * OU::Dec(const OU_PK pk, const OU_SK sk, const BIGNUM *c){
+    BIGNUM *m = BN_new();
+    BIGNUM *p_2 = BN_new(); 
+    BIGNUM *p_minus_1 = BN_new(); 
 
+    BIGNUM *c_p = BN_new();
+    BIGNUM *g_p = BN_new(); 
+    BN_sqr(p_2, sk.p, bn_ctx); // p_2 = p * p
+    BN_sub(p_minus_1, sk.p, BN_value_one()); // p_minus_1 = p - 1 
+    BN_mod_exp(c_p, c, p_minus_1, p_2, bn_ctx); // c_p = c^(p-1) mod p^2
+    BN_mod_exp(g_p, pk.g, p_minus_1, p_2, bn_ctx); // g_p = g^(p-1) mod p^2
+
+    BIGNUM *L_c_p = BN_new(); // L(c_p)
+    BIGNUM *L_g_p = BN_new(); // L(g_p)
+    BIGNUM *L_g_p_inverse = BN_new(); // L(g_p)
+
+    L_c_p = L(c_p, sk.p);
+    L_g_p = L(g_p, sk.p);
+    BN_mod_inverse(L_g_p_inverse, L_g_p, sk.p, bn_ctx);
+    BN_mod_mul(m, L_c_p, L_g_p_inverse, sk.p, bn_ctx); // m = L_c_p / L_g_p mod p
+
+    BN_free(p_2);
+    BN_free(p_minus_1);
+    BN_free(c_p);
+    BN_free(g_p);
+    BN_free(L_c_p);
+    BN_free(L_g_p);
+    BN_free(L_g_p_inverse);
+
+    return m;
 }
 unsigned char * OU::Dec(const OU_PK pk, const OU_SK sk, const unsigned char * C){
+    BIGNUM* c = BN_new();
+    unsigned char* M = new unsigned char[lambda/4];
 
+    memset(M, 0x00, lambda/4);
+
+    BN_hex2bn(&c, (char*)C);
+
+    strcpy((char*)M, BN_bn2hex(Dec(pk, sk, c)));
+
+    return M;
 }
 
 BIGNUM * OU::Add(const OU_PK pk, const BIGNUM *c1, const BIGNUM *c2){
-
+    BIGNUM * ret = BN_new();
+    BN_mod_mul(ret, c1, c2, pk.n, bn_ctx);  // c = c1 * c2 mod n
+    return ret;
 }
 unsigned char * OU::Add(const OU_PK pk, const unsigned char * C1, const unsigned char * C2){
+    BIGNUM* c1 = BN_new();
+    BIGNUM* c2 = BN_new();
+    unsigned char * ret = new unsigned char[3*lambda/4];
 
+    memset(ret, 0x00, 3*lambda/4);
+
+    BN_hex2bn(&c1, (char*)C1);
+    BN_hex2bn(&c2, (char*)C2);
+
+    strcpy((char*)ret, BN_bn2hex(Add(pk, c1, c2)));
+
+    BN_free(c1);
+    BN_free(c2);
+
+    return ret;
 }
 
 BIGNUM * OU::Sub(const OU_PK pk, const BIGNUM *c1, const BIGNUM *c2){
+    BIGNUM *ret = BN_new();
+    BIGNUM *c2_inverse  = BN_new();
+    
+    BN_mod_inverse(c2_inverse, c2, pk.n, bn_ctx); // c2_inverse = 1 / c2
+    BN_mod_mul(ret, c1, c2_inverse, pk.n, bn_ctx);  // ret = c1 * c2_inverse mod n
 
+    BN_free(c2_inverse);
+
+    return ret;
 }
 unsigned char * OU::Sub(const OU_PK pk, const unsigned char * C1, const unsigned char * C2){
+    BIGNUM* c1 = BN_new();
+    BIGNUM* c2 = BN_new();
+    unsigned char * ret = new unsigned char[3*lambda/4];
 
+    memset(ret, 0x00, 3*lambda/4);
+
+
+    BN_hex2bn(&c1, (char*)C1);
+    BN_hex2bn(&c2, (char*)C2);
+
+    strcpy((char*)ret, BN_bn2hex(Sub(pk, c1, c2)));
+
+    BN_free(c1);
+    BN_free(c2);
+
+    return ret;
 }
 
-BIGNUM * OU::Scalar_Mul(const OU_PK pk, const BIGNUM *s, const BIGNUM *c2){
+BIGNUM * OU::Scalar_Mul(const OU_PK pk, const BIGNUM *s, const BIGNUM *c){
+    BIGNUM *ret = BN_new();
 
+    BN_mod_exp(ret, c, s, pk.n, bn_ctx);
+
+    return ret;
 }
-unsigned char * OU::Scalar_Mul(const OU_PK pk, const unsigned char *s, const unsigned char *C){
-    
+unsigned char * OU::Scalar_Mul(const OU_PK pk, const unsigned char *S, const unsigned char *C){
+    BIGNUM *s = BN_new();
+    BIGNUM *c = BN_new();
+    unsigned char * ret = new unsigned char[3*lambda/4];
+
+    memset(ret, 0x00, 3*lambda/4);
+
+    BN_hex2bn(&s, (char*)S);
+    BN_hex2bn(&c, (char*)C);
+
+    strcpy((char*)ret, BN_bn2hex(Scalar_Mul(pk, s, c)));
+
+    BN_free(s);
+    BN_free(c);
+
+    return ret;
 }
