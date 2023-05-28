@@ -14,11 +14,11 @@ OU_EqualityTest::OU_EqualityTest(int lambda){
     aliceHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
     bobHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
 
-    encodingTime = duration<double>(0);
-    step1Time = duration<double>(0);
-    step2Time = duration<double>(0);
-    step3Time = duration<double>(0);
-    totalTime = duration<double>(0);
+    encodingTime = duration<double, milli>(0);
+    step1Time = duration<double, milli>(0);
+    step2Time = duration<double, milli>(0);
+    step3Time = duration<double, milli>(0);
+    totalTime = duration<double, milli>(0);
 }
 
 
@@ -34,9 +34,6 @@ bool OU_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     system_clock::time_point totalStartTime = system_clock::now();
     
     //// endcoding ////
-    cout << "OU encoding " << endl;
-
-    /////
     system_clock::time_point encodingStartTime = system_clock::now();
     stringstream stream1;
     stringstream stream2;
@@ -70,9 +67,10 @@ bool OU_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     system_clock::time_point totalEndTime = system_clock::now();
     totalTime += totalEndTime - totalStartTime;
 
-    cout << "Okamoto Uchiyama : " << decResult << endl;
-    if(*(decResult) == 48){
-        cout << "Okamoto Uchiyama : same" << endl;
+    string str(reinterpret_cast<const char*>(decResult));
+    if(str.compare("0") == 0){
+        // cout << "Okamoto Uchiyama : " << decResult << endl;
+        // cout << "Okamoto Uchiyama : same" << endl;
         return true;
     }
     else

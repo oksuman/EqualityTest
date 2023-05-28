@@ -15,12 +15,11 @@ ECE_EqualityTest::ECE_EqualityTest(){
     aliceHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
     bobHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
 
-    encodingTime = duration<double>(0);
-    initialTime = duration<double>(0);
-    step1Time = duration<double>(0);
-    step2Time = duration<double>(0);
-    step3Time = duration<double>(0);
-    totalTime = duration<double>(0);
+    encodingTime = duration<double, milli>(0);
+    step1Time = duration<double, milli>(0);
+    step2Time = duration<double, milli>(0);
+    step3Time = duration<double, milli>(0);
+    totalTime = duration<double, milli>(0);
 }
 
 void ECE_EqualityTest::keyGen(){
@@ -67,9 +66,9 @@ bool ECE_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     system_clock::time_point totalEndTime = system_clock::now();
     totalTime += totalEndTime - totalStartTime;
 
-    cout << "ece: " << decResult << endl;
+    // cout << "ece: " << decResult << endl;
     if(*(decResult+1) == 48){
-        cout << "ece : same" << endl; 
+        // cout << "ece : same" << endl; 
         return true;
     }
     else

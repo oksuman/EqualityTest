@@ -17,13 +17,13 @@ class Paillier_EqualityTest{
         const unsigned char* aliceHexPlainText;
         const unsigned char* bobHexPlainText;
 
-        duration<double> encodingTime;  // random number -> message
-        duration<double> initialTime;   // Alice's key generation
-        duration<double> step1Time;     // Alice encrypts a message
-        duration<double> step2Time;     // Bob encrypts a message, sub, scalar mul
-        duration<double> step3Time;     // Alice decrypts the message
-        duration<double> totalTime;     // step1~step3
-
+        duration<double, milli> encodingTime;  // random number -> message
+        duration<double, milli> initialTime;   // Alice's key generation
+        duration<double, milli> step1Time;     // Alice encrypts a message
+        duration<double, milli> step2Time;     // Bob encrypts a message, sub, scalar mul
+        duration<double, milli> step3Time;     // Alice decrypts the message
+        duration<double, milli> totalTime;     // step1~step3
+        
     public:
         Paillier_EqualityTest();
         void keyGen(int lambda);

@@ -12,12 +12,12 @@ using namespace chrono;
 Paillier_EqualityTest::Paillier_EqualityTest(){
     aliceHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
     bobHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
-
-    encodingTime = duration<double>(0);
-    step1Time = duration<double>(0);
-    step2Time = duration<double>(0);
-    step3Time = duration<double>(0);
-    totalTime = duration<double>(0);
+    
+    encodingTime = duration<double, milli>(0);
+    step1Time = duration<double, milli>(0);
+    step2Time = duration<double, milli>(0);
+    step3Time = duration<double, milli>(0);
+    totalTime = duration<double, milli>(0);
 }
 
 void Paillier_EqualityTest::keyGen(int lambda){
@@ -64,9 +64,10 @@ bool Paillier_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     system_clock::time_point totalEndTime = system_clock::now();
     totalTime += totalEndTime - totalStartTime;
 
-    cout << "paillier : " << decResult << endl;
-    if(*(decResult) == 48){
-        cout << "paillier : same" << endl;
+    string str(reinterpret_cast<const char*>(decResult));
+    if(str.compare("0") == 0){
+        // cout << "paillier : " << decResult << endl;
+        // cout << "paillier : same" << endl;
         return true;
     }
     else

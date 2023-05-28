@@ -15,11 +15,11 @@ using namespace chrono;
 
 GM_EqualityTest::GM_EqualityTest(){
     
-    encodingTime = duration<double>(0);
-    step1Time = duration<double>(0);
-    step2Time = duration<double>(0);
-    step3Time = duration<double>(0);
-    totalTime = duration<double>(0);
+    encodingTime = duration<double, milli>(0);
+    step1Time = duration<double, milli>(0);
+    step2Time = duration<double, milli>(0);
+    step3Time = duration<double, milli>(0);
+    totalTime = duration<double, milli>(0);
 }
 
 void GM_EqualityTest::keyGen(int lambda){
@@ -78,9 +78,9 @@ bool GM_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     system_clock::time_point totalEndTime = system_clock::now();
     totalTime += totalEndTime - totalStartTime;
 
-    cout << "gm : " << decResult << endl;
-    cout << "alice m : " << aliceBinPlainText << endl;
-    cout << "bob m : " << bobBinPlainText << endl;
+    // cout << "gm : " << decResult << endl;
+    // cout << "alice m : " << aliceBinPlainText << endl;
+    // cout << "bob m : " << bobBinPlainText << endl;
     bitset<MESSAGE_BIN_SIZE>AdecResult;
     for(index=0; index<MESSAGE_BIN_SIZE; index++){
         AdecResult.set(MESSAGE_BIN_SIZE - index - 1, gm.Dec(publicKey, secretKey, aliceCipherText[index]));
@@ -90,11 +90,11 @@ bool GM_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
         BdecResult.set(MESSAGE_BIN_SIZE - index - 1, gm.Dec(publicKey, secretKey, bobCipherText[index]));
     }
     
-    cout << "alice c : " << AdecResult << endl;
-    cout << "bob c : " << BdecResult << endl;
+    // cout << "alice c : " << AdecResult << endl;
+    // cout << "bob c : " << BdecResult << endl;
 
     if(decResult.none()){
-        cout << "gm : same" << endl;
+        // cout << "gm : same" << endl;
         return true;
     }
     else

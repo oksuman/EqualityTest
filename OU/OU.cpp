@@ -59,7 +59,6 @@ void OU::KeyGen(OU_PK &pk, OU_SK &sk){
     BIGNUM *p_2 = BN_new();                 // p^2
 
     pk.n = BN_new();                       
-    std::cout << " 시작 "<< std::endl;
     do
     {
         sk.p = generate_random_prime1();   // p
@@ -68,7 +67,6 @@ void OU::KeyGen(OU_PK &pk, OU_SK &sk){
         BN_mul(pk.n, p_2, sk.q, bn_ctx);   // n=p^2*q 
     } while (BN_num_bits(pk.n) != 3072);
     
-    std::cout << "n 비트 수 : "<< BN_num_bits(pk.n) << std::endl;
 
     pk.g = BN_new();
     BIGNUM *g_p = BN_new(); //gp = g^(p-1) mod p^2
