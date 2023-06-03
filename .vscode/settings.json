@@ -51,7 +51,8 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "bitset": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "param.h": "c"
     },
   
 }
