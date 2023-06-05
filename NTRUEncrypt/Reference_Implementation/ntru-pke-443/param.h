@@ -10,8 +10,6 @@
 
 #include <stdint.h>
 
-typedef enum _NTRU_PARAM_SET_ID         PARAM_SET_ID;
-typedef const struct _NTRU_PARAM_SET    PARAM_SET;
 #define LENGTH_OF_HASH 64
 enum _NTRU_PARAM_SET_ID {
     /* scheme_method - dimension */
@@ -20,6 +18,8 @@ enum _NTRU_PARAM_SET_ID {
     NTRU_CCA_443,
     NTRU_CCA_743,
 };
+typedef enum _NTRU_PARAM_SET_ID         PARAM_SET_ID;
+typedef const struct _NTRU_PARAM_SET    PARAM_SET;
 
 
 struct _NTRU_PARAM_SET {
