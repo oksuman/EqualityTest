@@ -1,1 +1,1 @@
-../common/crypto_stream.d: ../common/crypto_stream.c
+../common/crypto_stream.o: ../common/crypto_stream.c

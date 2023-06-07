@@ -25,6 +25,7 @@ keygen(
           uint16_t  *buf,
     const PARAM_SET *param)
 {
+    
     int16_t     i;
     uint16_t    *f;
     uint16_t    *f_inv;
@@ -43,13 +44,11 @@ keygen(
         f[0]++;
     }while (ntru_ring_inv(f, param->N, localbuf, f_inv) == -1);
 
-
     /* compute f^-1 by lifting f_inv mod 2 to f_inv mod q*/
     ring_lift_inv_pow2(f_inv, f, param, localbuf);
 
     /* generate g*/
     trinary_poly_gen(g, param->N, param->d);
-
     for (i=0;i<param->N;i++)
     {
         f[i] = f[i] & 0x7FF;
@@ -232,6 +231,7 @@ pad_msg(
     uint16_t    i,j;
     char        tmp;
     memset(m, 0, sizeof(uint16_t)*param->N);
+
 
     /* generate the pad of a degree 167 trinary polynomial*/
     pad = m + param->N - 167;
@@ -440,9 +440,10 @@ encrypt_cca(
     localbuf    = t     + param->padN;
 
     /* pad the message */
-    if (pad_msg( m, msg, msg_len, param) == -1)
+    if (pad_msg(m, msg, msg_len, param) == -1) // 메시지가 너무 긴 경우 
         return;
 
+  
     /* generate r from the message */
     if (generate_r(r, m, h, localbuf,param) == -1)
         return;
@@ -454,7 +455,13 @@ encrypt_cca(
         t[i] *= param->p;
         t[i] &= (param->q-1);
     }
-
+    ////
+    printf("enc1: \n");
+    printf("t: \n");
+    for (i=0;i<param->padN;i++)
+        printf("%d, ", t[i]);
+    printf("\n");
+    ////
     /* mask the message with hash(r*h) */
     mask_m (m, t, localbuf, param);
 

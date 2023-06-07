@@ -1,3 +1,3 @@
-packing.d: packing.c param.h
+packing.o: packing.c param.h
 
 param.h:

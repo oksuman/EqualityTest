@@ -1,3 +1,3 @@
-param.d: param.c param.h
+param.o: param.c param.h
 
 param.h:

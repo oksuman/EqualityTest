@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <ctype.h>
 #include <math.h>
+#include <assert.h>
 #include "NTRUEncrypt.h"
 
 #define MESSAGE_HEX_SIZE 8 // 32bit
@@ -37,65 +38,64 @@ int main(int argc, char* argv[]) {
     */
 
     /* key generation */
-    uint16_t *F = NULL; /* output secret key f */
-    uint16_t *g = NULL; /* optional output secret key g */
-    uint16_t *h = NULL; /* output public key h */
-    uint16_t *buf = NULL;
-    keygen(&F, &g, &h, &buf, param);
+    printf("about to key gen\n");
+    char* aliceHexPlainText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
+    char* bobHexPlainText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
+    char* aliceDecText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
+    char* bobDecText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
+    uint16_t* c1 = (uint16_t*)malloc(sizeof(uint16_t) * param->N);
+    uint16_t* c2 = (uint16_t*)malloc(sizeof(uint16_t) * param->N);
+    uint16_t* F = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);
+    uint16_t* g = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);
+    uint16_t* h = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);
+    uint16_t* buf = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);
 
+    keygen(F, g, h, buf, param);
 
+    printf("F: \n");
+    for (int i=0;i<param->padN;i++)
+        printf("%d, ", F[i]);
+    printf("\n");
+
+    // for (int i = 0; i < param->N; i++) {
+    //     assert(h[i] >= 0 && h[i] < param->q);
+    // }
+    // printf("h: \n");
+    // for (int i=0;i<param->padN;i++)
+    //     printf("%d, ", h[i]);
+    // printf("\n");
+
+    printf("after key gen\n");
     int16_t aliceNumber = 150;
     int16_t bobNumber = 1675;
 
     /* endcoding */
-    char aliceHexPlainText[MESSAGE_HEX_SIZE];
-    char bobHexPlainText[MESSAGE_HEX_SIZE];
 
-    snprintf(aliceHexPlainText, sizeof(aliceHexPlainText), "%04x", aliceNumber);
-    snprintf(bobHexPlainText, sizeof(bobHexPlainText), "%04x", bobNumber);
+    snprintf(aliceHexPlainText, MESSAGE_HEX_SIZE + 1, "%08x", aliceNumber);
+    snprintf(bobHexPlainText, MESSAGE_HEX_SIZE + 1, "%08x", bobNumber);
 
-    printf("come3\n");
     printf("aliceHexPlainText : %s\n", aliceHexPlainText);
     printf("bobHexPlainText : %s\n", bobHexPlainText);
 
-    uint16_t *c1 = NULL;
-    uint16_t *c2 = NULL;
+    encrypt_cca(c1, aliceHexPlainText, msg_len, h, buf, param);
+    encrypt_cca(c2, bobHexPlainText, msg_len, h, buf, param);
 
-    printf("come2\n");
-    encrypt_cca(&c1, aliceHexPlainText, msg_len, h, buf, param);
-    encrypt_cca(&c2, bobHexPlainText, msg_len, h, buf, param);
+    printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ복호화시작ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
+    printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ한턴쉬고ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
+    decrypt_cca(aliceDecText, F, h, c1, buf, param);
+    decrypt_cca(bobDecText, F, h, c2, buf, param);
+    
 
-    printf("aliceCipherText : ");
-    // print_hex(c1, param->ct_len);
-    printf("bobHexCipherText : ");
-    // print_hex(c2, param->ct_len)
+    printf("aliceDecText : %s\n", aliceHexPlainText);
+    printf("bobDecText : %s\n", bobHexPlainText);
 
-    char aliceDecryptMessage[MESSAGE_HEX_SIZE];
-    char bobDecryptMessage[MESSAGE_HEX_SIZE];
-    printf("come\n");
-    decrypt_cca(&aliceDecryptMessage, F, h, c1, buf, param);
-    decrypt_cca(&bobDecryptMessage, F, h, c2, buf, param);
-
-    printf("aliceDecryptMessage : %s\n", aliceDecryptMessage);
-    printf("bobDecryptMessage : %s\n", bobDecryptMessage);
-
-    // 메모리 해제
-    if (F != NULL)
-        free(F);
-    if (g != NULL)
-        free(g);
-    if (h != NULL)
-        free(h);
-    if (buf != NULL)
-        free(buf);
-    if (c1 != NULL)
-        free(c1);
-    if (c2 != NULL)
-        free(c2);
-    // if (aliceDecryptMessage != NULL)
-    //     free(aliceDecryptMessage);
-    // if (bobDecryptMessage != NULL)
-    //     free(bobDecryptMessage);
-
+    free(F);
+    free(g);
+    free(h);
+    // free(c1);
+    // free(c2);
+    // free(aliceHexPlainText);
+    // free(bobHexPlainText);
+    // free(buf);
     return 0;
 }
