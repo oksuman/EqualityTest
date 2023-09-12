@@ -450,21 +450,17 @@ encrypt_cca(
 
     /* compute r*h */
     ntru_ring_mult_coefficients(r, h, param, localbuf, t);
+
     for (i=0;i<param->N;i++)
     {
         t[i] *= param->p;
         t[i] &= (param->q-1);
     }
-    ////
-    printf("enc1: \n");
-    printf("t: \n");
-    for (i=0;i<param->padN;i++)
-        printf("%d, ", t[i]);
-    printf("\n");
-    ////
-    /* mask the message with hash(r*h) */
-    mask_m (m, t, localbuf, param);
 
+    // 수정 : c = r*h + m 으로 //
+    /* mask the message with hash(r*h) */
+    // mask_m (m, t, localbuf, param);
+    /////////////////////////////
 
     for (i=0;i<param->N;i++)
         c[i] = (t[i] + m[i]) & (param->q-1);
@@ -516,8 +512,12 @@ int decrypt_cca(
     for (i=0;i<param->padN;i++)
         t[i] = (c[i] - m[i]) & (param->q-1);
 
+
+    // 수정 ////////////////////////
     /* unmask m with hash(r*h) */
-    unmask_m (m, t, localbuf, param);
+    // unmask_m (m, t, localbuf, param);
+    ////////////////////////////////
+
 
     /* recover r from hash(m) */
     if (generate_r(r, m, h, localbuf,param) == -1)
@@ -529,36 +529,36 @@ int decrypt_cca(
     /* check if recovered r is correct */
     ntru_ring_mult_coefficients(r, h, param, localbuf, t_rec);
 
-    for(i=0;i<param->N;i++)
-    {
-        if (((param->p*t_rec[i] - t[i]) & (param->q-1)) !=0)
-        {
-            printf("error: \n");
-            printf("r: \n");
-            for (i=0;i<param->padN;i++)
-                printf("%d, ", r[i]);
-            printf("\n");
-            printf("h: \n");
-            for (i=0;i<param->padN;i++)
-                printf("%d, ", h[i]);
-            printf("\n");
-            printf("t_rec: \n");
-            for (i=0;i<param->padN;i++)
-                printf("%d, ", t_rec[i]);
-            printf("\n");
-            printf("t: \n");
-            for (i=0;i<param->padN;i++)
-                printf("%d, ", t[i]);
-            printf("\n");
-            printf("c: \n");
-            for (i=0;i<param->padN;i++)
-                printf("%d, ", c[i]);
-            printf("\n");
+    // for(i=0;i<param->N;i++)
+    // {
+    //     if (((param->p*t_rec[i] - t[i]) & (param->q-1)) !=0)
+    //     {
+    //         printf("error: \n");
+    //         printf("r: \n");
+    //         for (i=0;i<param->padN;i++)
+    //             printf("%d, ", r[i]);
+    //         printf("\n");
+    //         printf("h: \n");
+    //         for (i=0;i<param->padN;i++)
+    //             printf("%d, ", h[i]);
+    //         printf("\n");
+    //         printf("t_rec: \n");
+    //         for (i=0;i<param->padN;i++)
+    //             printf("%d, ", t_rec[i]);
+    //         printf("\n");
+    //         printf("t: \n");
+    //         for (i=0;i<param->padN;i++)
+    //             printf("%d, ", t[i]);
+    //         printf("\n");
+    //         printf("c: \n");
+    //         for (i=0;i<param->padN;i++)
+    //             printf("%d, ", c[i]);
+    //         printf("\n");
 
-            memset(buf,0, sizeof(uint16_t)*param->padN*8);
-            return -1;
-        }
-    }
+    //         memset(buf,0, sizeof(uint16_t)*param->padN*8);
+    //         return -1;
+    //     }
+    // }
 
     /* convert the message polynomial into char string */
     msg_len = recover_msg(msg, m, param);

@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -12,90 +13,154 @@
 
 #define MESSAGE_HEX_SIZE 8 // 32bit
 
-void print_hex(const uint16_t *arr, size_t size) {
-    for (size_t i = 0; i < size; i++) {
-        printf("%04x ", arr[i]);
-    }
-    printf("\n");
-}
-
-void generate_random_numbers(uint16_t *arr, size_t size, uint16_t min_value, uint16_t max_value) {
-    for (size_t i = 0; i < size; i++) {
-        arr[i] = min_value + rand() % (max_value - min_value + 1);
-    }
-}
+int enc(uint16_t *c, const char *m, unsigned long long mlen, uint16_t *h, const PARAM_SET *param);
+int dec(char *m, uint16_t *c, uint16_t *F, uint16_t *h, const PARAM_SET *param);
+void add(uint16_t *c, uint16_t *c1, uint16_t *c2, const PARAM_SET *param);
 
 int main(int argc, char* argv[]) {
     srand(time(NULL));
 
-    PARAM_SET_ID pid = NTRU_KEM_443;
+    PARAM_SET_ID pid = NTRU_CCA_443;
     const PARAM_SET* param = get_param_set_by_id(pid);
-    const size_t msg_len = 4; /* message length in bytes, 443 param 에서는 33byte가 최대 길이 */
+    const size_t msg_len = 8; /* message length in bytes, 443 param 에서는 33byte가 최대 길이 */
     /*
     N : 443
     NAEP 적용 message size 270bit
     Message <= 33bytes
     */
 
-    /* key generation */
-    printf("about to key gen\n");
     char* aliceHexPlainText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
     char* bobHexPlainText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
-    char* aliceDecText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
-    char* bobDecText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
+
     uint16_t* c1 = (uint16_t*)malloc(sizeof(uint16_t) * param->N);
     uint16_t* c2 = (uint16_t*)malloc(sizeof(uint16_t) * param->N);
-    uint16_t* F = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);
-    uint16_t* g = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);
-    uint16_t* h = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);
-    uint16_t* buf = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);
+    uint16_t* c3 = (uint16_t*)malloc(sizeof(uint16_t) * param->N);
+
+    char* aliceDecText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
+    char* bobDecText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
+    char* addDecText = (char*)malloc(sizeof(char) * MESSAGE_HEX_SIZE + 1);
+
+    
+    /* key generation */
+    uint16_t* F = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);        //SK
+    uint16_t* g = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);        //SK
+    uint16_t* h = (uint16_t*)malloc(sizeof(uint16_t) * param->padN);        //PK
+    uint16_t *buf = malloc (sizeof(uint16_t)*param->padN * 6);
 
     keygen(F, g, h, buf, param);
+    free(buf);
 
-    printf("F: \n");
-    for (int i=0;i<param->padN;i++)
-        printf("%d, ", F[i]);
-    printf("\n");
-
-    // for (int i = 0; i < param->N; i++) {
-    //     assert(h[i] >= 0 && h[i] < param->q);
-    // }
-    // printf("h: \n");
-    // for (int i=0;i<param->padN;i++)
-    //     printf("%d, ", h[i]);
-    // printf("\n");
-
-    printf("after key gen\n");
+    /* encoding */
     int16_t aliceNumber = 150;
     int16_t bobNumber = 1675;
 
-    /* endcoding */
-
+   
     snprintf(aliceHexPlainText, MESSAGE_HEX_SIZE + 1, "%08x", aliceNumber);
     snprintf(bobHexPlainText, MESSAGE_HEX_SIZE + 1, "%08x", bobNumber);
+
 
     printf("aliceHexPlainText : %s\n", aliceHexPlainText);
     printf("bobHexPlainText : %s\n", bobHexPlainText);
 
-    encrypt_cca(c1, aliceHexPlainText, msg_len, h, buf, param);
-    encrypt_cca(c2, bobHexPlainText, msg_len, h, buf, param);
+    /* encryption */
+    enc(c1, aliceHexPlainText, msg_len, h, param);
+    enc(c2, bobHexPlainText, msg_len, h, param);
 
-    printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ복호화시작ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
-    printf("ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ한턴쉬고ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ\n");
-    decrypt_cca(aliceDecText, F, h, c1, buf, param);
-    decrypt_cca(bobDecText, F, h, c2, buf, param);
-    
+    /* decryption */
+    dec(aliceDecText, c1, F, h, param);
+    dec(bobDecText, c2, F, h, param);
 
-    printf("aliceDecText : %s\n", aliceHexPlainText);
-    printf("bobDecText : %s\n", bobHexPlainText);
+    printf("aliceDecText : %s\n", aliceDecText);
+    printf("bobDecText : %s\n", bobDecText);
+
+
+    /* add */
+    add(c3, c1, c2, param);
+    printf("%d\n", dec(addDecText, c3, F, h, param));
+    printf("addDecText : %s\n", addDecText);
+    printf("%s\n", addDecText);
+
 
     free(F);
     free(g);
     free(h);
-    // free(c1);
-    // free(c2);
-    // free(aliceHexPlainText);
-    // free(bobHexPlainText);
-    // free(buf);
+    free(aliceHexPlainText);
+    free(bobHexPlainText);
+    free(c1);
+    free(c2);
+    free(c3);
+    free(aliceDecText);
+    free(bobDecText);
     return 0;
+}
+
+int enc(uint16_t *c, const char *m, unsigned long long mlen, uint16_t *h, const PARAM_SET *param)
+{
+    if (param->id!=NTRU_CCA_443 && param->id != NTRU_CCA_743)
+    {
+        printf("unsupported parameter sets\n");
+        return -1;
+    }   
+
+    uint16_t *buf;
+
+    buf = malloc(sizeof(uint16_t)*param->padN*6);
+        
+    if(!buf)
+    {
+        printf("malloc error\n");
+        return -1;
+    }
+    memset(buf,0, sizeof(uint16_t)*param->padN*6);
+
+    encrypt_cca(c, m, mlen, h, buf, param);
+
+
+    memset(buf,0, sizeof(uint16_t)*param->padN*6);
+
+    free(buf);
+
+    return 0;
+}
+
+int dec(char *m, uint16_t *c, uint16_t *F, uint16_t *h, const PARAM_SET *param){
+
+    if (param->id!=NTRU_CCA_443 && param->id != NTRU_CCA_743)
+    {
+        printf("unsupported parameter sets\n");
+        return -1;
+    }
+
+    uint16_t *buf;
+    buf = malloc(sizeof(uint16_t)*param->padN*8);
+
+    if(!buf)
+    {
+        printf("malloc error\n");
+        return -1;
+    }
+    memset(buf,0, sizeof(uint16_t)*param->padN*8);
+
+    decrypt_cca(m, F, h, c, buf, param);
+
+    free(buf);
+
+    return 0;
+}
+
+void add(uint16_t *c, uint16_t *c1, uint16_t *c2, const PARAM_SET *param){
+    printf("c1 : \n");
+    for (int i=0;i<param->N;i++)
+        printf("%d, ", c1[i]);
+
+    printf("\n\nc2 : \n");
+    for (int i=0;i<param->N;i++)
+        printf("%d, ", c2[i]);
+
+    printf("\n\nc : \n");
+    for (int i=0;i<param->N;i++){
+        c[i] = (c1[i] - c2[i]) & (param->q-1);
+        printf("%d, ", c[i]);
+    }
+    printf("\n");
 }

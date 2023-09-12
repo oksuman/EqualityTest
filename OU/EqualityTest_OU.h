@@ -24,7 +24,7 @@ class OU_EqualityTest{
         duration<double, milli> totalTime;     // step1~step3
 
     public:
-        OU_EqualityTest(int lambda);
+        OU_EqualityTest();
         void keyGen();  
         bool equalityTest(int aliceNumber, int bobNumber);
         void printInitialTime();

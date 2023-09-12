@@ -52,7 +52,9 @@
         "typeinfo": "cpp",
         "bitset": "cpp",
         "thread": "cpp",
-        "param.h": "c"
+        "param.h": "c",
+        "condition_variable": "cpp",
+        "mutex": "cpp"
     },
   
 }

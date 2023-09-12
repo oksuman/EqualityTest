@@ -9,7 +9,7 @@
 using namespace std;
 using namespace chrono;
 
-OU_EqualityTest::OU_EqualityTest(int lambda){
+OU_EqualityTest::OU_EqualityTest(){
 
     aliceHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
     bobHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];

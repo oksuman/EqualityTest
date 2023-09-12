@@ -14,10 +14,11 @@ int main(int argc, char* argv[]){
     std::random_device rd;
     std::mt19937 gen(rd());
 
+    // n : 3072bit, eliptic curve : 256
     Paillier_EqualityTest paillierTest = Paillier_EqualityTest();
     ECE_EqualityTest eceTest = ECE_EqualityTest();
     GM_EqualityTest gmTest = GM_EqualityTest();
-    OU_EqualityTest ouTest = OU_EqualityTest(1024);
+    OU_EqualityTest ouTest = OU_EqualityTest();
 
 
     std::uniform_int_distribution<std::uint16_t> dist10(0x200, 0x3FF);  
@@ -38,6 +39,7 @@ int main(int argc, char* argv[]){
 
     std::vector<std::uint16_t> exactList;
 
+    // 128bit security only 
     gmTest.keyGen(1536);
     paillierTest.keyGen(1536);
     eceTest.keyGen();
