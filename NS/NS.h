@@ -26,12 +26,13 @@ extern "C"
     #endif
 
     typedef struct {
-        BIGNUM *n, *g, *sigma;
+        BIGNUM *n, *g;
+        NTL::ZZ sigma;
     } NS_PK;    
 
     typedef struct {
-        std::vector<int> primes; 
-        BIGNUM *p, *q;
+        std::vector<NTL::ZZ> primes; 
+        NTL::ZZ p, q;
     } NS_SK;
 
     class NS{
@@ -46,7 +47,7 @@ extern "C"
         NS(int lambda, int k, int B);
         ~NS();
         int getRandomBits(int minBits, int maxBits);
-        std::vector<int> pickPrimes(int k ,int B);
+        std::vector<NTL::ZZ> pickPrimes(int k ,int B);
         void KeyGen(NS_PK &pk, NS_SK &sk);
     };
 
