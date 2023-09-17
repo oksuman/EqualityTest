@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "stdio.h": "c",
+        "stdint.h": "c",
+        "stdlib.h": "c",
+        "params.h": "c",
+        "indcpa.h": "c",
+        "polyvec.h": "c",
+        "poly.h": "c"
+    }
+}
