@@ -3,7 +3,7 @@
 # 컴파일러 설정
 CC = g++
 CFLAGS = -std=c++11 -Wall
-LIBS = -lssl -lcrypto
+LIBS = -lssl -lcrypto -lntl -lgmp -lpthread
 
 # 빌드 대상 설정
 TARGET = ProtocolTest
@@ -13,12 +13,13 @@ SRCS =  ProtocolTest.cpp \
 		Paillier/EqualityTest_Paillier.cpp Paillier/Paillier.cpp \
 	    ECE/EqualityTest_ECE.cpp ECE/ECE.cpp \
 		GM/EqualityTest_GM.cpp GM/GM.cpp \
-		OU/EqualityTest_OU.cpp OU/OU.cpp
+		OU/EqualityTest_OU.cpp OU/OU.cpp \
+		NS/EqualityTest_NS.cpp NS/NS.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
 # 인클루드 디렉토리 설정
-INC_DIRS = -I. -IPaillier -IECE -IGM
+INC_DIRS = -I. -IPaillier -IECE -IGM -INS
 
 # 기본 빌드 명령
 all: $(TARGET)
@@ -32,7 +33,7 @@ $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $(INC_DIRS) -c $< -o $@
 
 # 의존성 관계 설정
-ProtocolTest.o: ProtocolTest.cpp Paillier/EqualityTest_Paillier.h ECE/EqualityTest_ECE.h GM/EqualityTest_GM.h OU/EqualityTest_OU.h
+ProtocolTest.o: ProtocolTest.cpp Paillier/EqualityTest_Paillier.h ECE/EqualityTest_ECE.h GM/EqualityTest_GM.h OU/EqualityTest_OU.h  NS/EqualityTest_NS.h
 	$(CC) $(CFLAGS) $(INC_DIRS) -c ProtocolTest.cpp -o ProtocolTest.o
 
 EqualityTest_Paillier.o: Paillier/EqualityTest_Paillier.cpp Paillier/EqualityTest_Paillier.h Paillier/Paillier.h
@@ -58,6 +59,13 @@ EqualityTest_OU.o: OU/EqualityTest_OU.cpp OU/EqualityTest_OU.h OU/OU.h
 
 OU.o: OU/OU.cpp OU/OU.h
 	$(CC) $(CFLAGS) $(INC_DIRS) -c OU/OU.cpp -o OU.o	
+
+NS.o: NS/NS.cpp NS/NS.h
+	$(CC) $(CFLAGS) $(INC_DIRS) -c NS/NS.cpp -o NS.o
+
+EqualityTest_NS.o: NS/EqualityTest_NS.cpp NS/EqualityTest_NS.h NS/NS.h
+	$(CC) $(CFLAGS) $(INC_DIRS) -c NS/EqualityTest_NS.cpp -o EqualityTest_NS.o
+
 
 # 불필요한 파일 정리 명령
 clean:

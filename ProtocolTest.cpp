@@ -8,6 +8,7 @@
 #include "ECE/EqualityTest_ECE.h"
 #include "GM/EqualityTest_GM.h"
 #include "OU/EqualityTest_OU.h"
+#include "NS/EqualityTest_NS.h"
 
 int main(int argc, char* argv[]){
 
@@ -19,6 +20,7 @@ int main(int argc, char* argv[]){
     ECE_EqualityTest eceTest = ECE_EqualityTest();
     GM_EqualityTest gmTest = GM_EqualityTest();
     OU_EqualityTest ouTest = OU_EqualityTest();
+    NS_EqualityTest nsTest = NS_EqualityTest(3072, 30, 3072);
 
 
     std::uniform_int_distribution<std::uint16_t> dist10(0x200, 0x3FF);  
@@ -29,6 +31,7 @@ int main(int argc, char* argv[]){
     int paillierEqualCount = 0;
     int eceEqualCount = 0;
     int ouEqualCount = 0;
+    int nsEqualCount = 0;
 
     std::vector<std::uint16_t> gmList;
     std::vector<std::uint16_t> paillierListA;
@@ -36,6 +39,8 @@ int main(int argc, char* argv[]){
     std::vector<std::uint16_t> eceList;
     std::vector<std::uint16_t> ouListA;
     std::vector<std::uint16_t> ouListB;
+    std::vector<std::uint16_t> nsListA;
+    std::vector<std::uint16_t> nsListB;
 
     std::vector<std::uint16_t> exactList;
 
@@ -44,9 +49,9 @@ int main(int argc, char* argv[]){
     paillierTest.keyGen(1536);
     eceTest.keyGen();
     ouTest.keyGen();
-
+    nsTest.keyGen();
     
-    for(int i=0; i<1000; i++){
+    for(int i=0; i<500; i++){
         // 10비트 정수 생성 
         std::uint16_t random10A = dist10(gen);
         std::uint16_t random10B = dist10(gen);
@@ -70,6 +75,11 @@ int main(int argc, char* argv[]){
             ouListA.push_back(random10A);
             ouListB.push_back(random10B);
             ouEqualCount++;
+        }
+        if(nsTest.equalityTest(random10A , random10B)){
+            nsListA.push_back(random10A);
+            nsListB.push_back(random10B);
+            nsEqualCount++;
         }
     }
     std::cout << "exact : ";
@@ -98,6 +108,12 @@ int main(int argc, char* argv[]){
     std::copy(ouListB.begin(), ouListB.end(), std::ostream_iterator<std::uint16_t>(std::cout, " "));
     std::cout << std::endl;
     
+    std::cout << "ns A : ";
+    std::copy(nsListA.begin(), nsListA.end(), std::ostream_iterator<std::uint16_t>(std::cout, " "));
+    std::cout << std::endl;
+    std::cout << "ns B : ";
+    std::copy(nsListB.begin(), nsListB.end(), std::ostream_iterator<std::uint16_t>(std::cout, " "));
+    std::cout << std::endl;
 
     gmTest.printEncodingTime();
     gmTest.printInitialTime();
@@ -105,32 +121,40 @@ int main(int argc, char* argv[]){
     gmTest.printStep2Time();
     gmTest.printStep3Time();
     gmTest.printTotalTime();
-
+    std::cout << std::endl;
     paillierTest.printEncodingTime();
     paillierTest.printInitialTime();
     paillierTest.printStep1Time();
     paillierTest.printStep2Time();
     paillierTest.printStep3Time();
     paillierTest.printTotalTime();
-
+    std::cout << std::endl;
     eceTest.printEncodingTime();
     eceTest.printInitialTime();
     eceTest.printStep1Time();
     eceTest.printStep2Time();
     eceTest.printStep3Time();
     eceTest.printTotalTime();
-
+    std::cout << std::endl;
     ouTest.printEncodingTime();
     ouTest.printInitialTime();
     ouTest.printStep1Time();
     ouTest.printStep2Time();
     ouTest.printStep3Time();
     ouTest.printTotalTime();
-
+    std::cout << std::endl;
+    nsTest.printEncodingTime();
+    nsTest.printInitialTime();
+    nsTest.printStep1Time();
+    nsTest.printStep2Time();
+    nsTest.printStep3Time();
+    nsTest.printTotalTime();
+    std::cout << std::endl;
     cout << "gm : " << gmEqualCount << endl;
     cout << "paillier : " << paillierEqualCount << endl;
     cout << "ece : " << eceEqualCount << endl;
     cout << "ou : " << ouEqualCount << endl;
+    cout << "ns : " << nsEqualCount << endl;
     
     // 30비트 정수 생성 
     // std::uint32_t random30 = dist30(gen);

@@ -1,0 +1,110 @@
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <chrono>
+#include <string>
+#include "NS.h"
+#include "EqualityTest_NS.h"
+
+using namespace std;
+using namespace chrono;
+
+
+NS_EqualityTest::NS_EqualityTest() : ns(){
+
+    encodingTime = duration<double, milli>(0);
+    step1Time = duration<double, milli>(0);
+    step2Time = duration<double, milli>(0);
+    step3Time = duration<double, milli>(0);
+    totalTime = duration<double, milli>(0);
+}
+
+NS_EqualityTest::NS_EqualityTest(int lambda, int k, int B)  : ns(lambda, k, B){
+
+    encodingTime = duration<double, milli>(0);
+    step1Time = duration<double, milli>(0);
+    step2Time = duration<double, milli>(0);
+    step3Time = duration<double, milli>(0);
+    totalTime = duration<double, milli>(0);
+}
+
+
+void NS_EqualityTest::keyGen(){
+
+    system_clock::time_point initialStartTime = system_clock::now();
+    
+    ns.KeyGen(this->publicKey, this->secretKey);
+
+    system_clock::time_point initialEndTime = system_clock::now();
+    initialTime = duration_cast<milliseconds>(initialEndTime - initialStartTime);
+
+    this->messageHexSize = this->publicKey.messageBits/4; 
+    aliceHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
+    bobHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
+
+}
+
+bool NS_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
+    system_clock::time_point totalStartTime = system_clock::now();
+    
+    //// endcoding ////
+    system_clock::time_point encodingStartTime = system_clock::now();
+    
+    NTL::ZZ aliceZZText(aliceNumber);
+    NTL::ZZ bobZZText(bobNumber);
+
+    system_clock::time_point encodingEndTime = system_clock::now();
+    encodingTime += encodingEndTime - encodingStartTime;
+
+    //// step 1 ////
+    system_clock::time_point step1StartTime = system_clock::now();
+    NTL::ZZ aliceCipherText = ns.Enc(publicKey, aliceZZText); // Alice encrypts
+    system_clock::time_point step1EndTime = system_clock::now();
+    step1Time += step1EndTime - step1StartTime;
+    
+    //// step 2 ////
+    system_clock::time_point step2StartTime = system_clock::now();
+    NTL::ZZ bobCipherText = ns.Enc(publicKey, bobZZText);    // Bob encrypts
+    NTL::ZZ subResult = ns.Sub(publicKey, aliceCipherText, bobCipherText);  // subResult = Bob - Alice
+    NTL::ZZ s = ns.generate_random_element1(publicKey);    // scalar
+    NTL::ZZ res = ns.Scalar_Mul(publicKey, s, subResult); // res = s * subResult
+    system_clock::time_point step2EndTime = system_clock::now();
+    step2Time += step2EndTime - step2StartTime;
+
+    //// step 3 ////
+    system_clock::time_point step3StartTime = system_clock::now();
+    bool compareResult = ns.isZero(publicKey, secretKey, res); // Alice decrypts
+    system_clock::time_point step3EndTime = system_clock::now();
+    step3Time += step3EndTime - step3StartTime;
+    system_clock::time_point totalEndTime = system_clock::now();
+    totalTime += totalEndTime - totalStartTime;
+
+    // std::cout << "aliceCipherText : " << aliceCipherText << std::endl;
+    // std::cout << "bobCipherText : " << bobCipherText << std::endl;
+    // std::cout << "subResult : " << subResult << std::endl;
+    // std::cout << "s: " << s << std::endl;
+    // std::cout << "res : " << res << std::endl;
+    // std::cout << "compare : " << compareResult << std::endl;
+    return compareResult;
+}   
+
+
+void NS_EqualityTest::printInitialTime(){
+    cout << "Naccache Stern Initial Time : " << initialTime.count() << "ms" << endl;
+}
+void NS_EqualityTest::printEncodingTime(){
+    cout << "Naccache Stern Encoding Time : " << encodingTime.count() << "ms" << endl;
+}
+void NS_EqualityTest::printStep1Time(){
+    cout << "Naccache Stern Step1 Time : " << step1Time.count() << "ms" << endl;
+}
+void NS_EqualityTest::printStep2Time(){
+    cout << "Naccache Stern Step2 Time : " << step2Time.count() << "ms" << endl;
+}
+void NS_EqualityTest::printStep3Time(){
+    cout << "Naccache Stern Step3 Time : " << step3Time.count() << "ms" << endl;
+}
+void NS_EqualityTest::printTotalTime(){
+    cout << "Naccache Stern Total Time : " << totalTime.count() << "ms" << endl;
+}
+

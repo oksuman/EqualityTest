@@ -65,6 +65,7 @@ extern "C"
 
         BIGNUM * Scalar_Mul(const OU_PK pk, const BIGNUM *s, const BIGNUM *c2);
         unsigned char * Scalar_Mul(const OU_PK pk, const unsigned char *s, const unsigned char *C);
+
     };
 #ifdef __cplusplus
 }
