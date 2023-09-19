@@ -54,8 +54,8 @@ unsigned char * OU::generate_random_element2(const OU_PK pk){
 void OU::KeyGen(OU_PK &pk, OU_SK &sk){
     pk.k = lambda;
 
-    sk.p = BN_new();
-    sk.q = BN_new();
+    // sk.p = BN_new();
+    // sk.q = BN_new();
     BIGNUM *p_2 = BN_new();                 // p^2
 
     pk.n = BN_new();                       

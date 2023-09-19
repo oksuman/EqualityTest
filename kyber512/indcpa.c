@@ -326,3 +326,7 @@ void add(unsigned char *c, unsigned char*c1, unsigned char* c2){
 
   pack_ciphertext(c, &b, &v);
 }
+
+void random_scalar_mul(){
+  
+}

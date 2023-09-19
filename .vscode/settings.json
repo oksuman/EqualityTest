@@ -54,7 +54,12 @@
         "thread": "cpp",
         "param.h": "c",
         "condition_variable": "cpp",
-        "mutex": "cpp"
+        "mutex": "cpp",
+        "complex": "cpp",
+        "csignal": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "set": "cpp"
     },
   
 }

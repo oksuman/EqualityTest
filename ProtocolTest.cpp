@@ -20,7 +20,7 @@ int main(int argc, char* argv[]){
     ECE_EqualityTest eceTest = ECE_EqualityTest();
     GM_EqualityTest gmTest = GM_EqualityTest();
     OU_EqualityTest ouTest = OU_EqualityTest();
-    NS_EqualityTest nsTest = NS_EqualityTest(3072, 30, 3072);
+    NS_EqualityTest nsTest = NS_EqualityTest();
 
 
     std::uniform_int_distribution<std::uint16_t> dist10(0x200, 0x3FF);  
@@ -50,11 +50,14 @@ int main(int argc, char* argv[]){
     eceTest.keyGen();
     ouTest.keyGen();
     nsTest.keyGen();
-    
-    for(int i=0; i<500; i++){
+
+
+    for(int i=0; i<1; i++){
         // 10비트 정수 생성 
-        std::uint16_t random10A = dist10(gen);
-        std::uint16_t random10B = dist10(gen);
+        // std::uint16_t random10A = dist10(gen);
+        // std::uint16_t random10B = dist10(gen);
+        std::uint16_t random10A = 100;
+        std::uint16_t random10B = 100;
         if(random10A == random10B){
             exactList.push_back(random10A);
         }
@@ -150,11 +153,11 @@ int main(int argc, char* argv[]){
     nsTest.printStep3Time();
     nsTest.printTotalTime();
     std::cout << std::endl;
-    cout << "gm : " << gmEqualCount << endl;
-    cout << "paillier : " << paillierEqualCount << endl;
-    cout << "ece : " << eceEqualCount << endl;
-    cout << "ou : " << ouEqualCount << endl;
-    cout << "ns : " << nsEqualCount << endl;
+    std::cout << "gm : " << gmEqualCount << endl;
+    std::cout << "paillier : " << paillierEqualCount << endl;
+    std::cout << "ece : " << eceEqualCount << endl;
+    std::cout << "ou : " << ouEqualCount << endl;
+    std::cout << "ns : " << nsEqualCount << endl;
     
     // 30비트 정수 생성 
     // std::uint32_t random30 = dist30(gen);

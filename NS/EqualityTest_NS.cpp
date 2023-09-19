@@ -38,10 +38,11 @@ void NS_EqualityTest::keyGen(){
     system_clock::time_point initialEndTime = system_clock::now();
     initialTime = duration_cast<milliseconds>(initialEndTime - initialStartTime);
 
-    this->messageHexSize = this->publicKey.messageBits/4; 
-    aliceHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
-    bobHexPlainText = new unsigned char[MESSAGE_HEX_SIZE];
-
+    // this->messageHexSize = this->ns.getMessageBits()/4; 
+    this->messageHexSize = MESSAGE_HEX_SIZE; 
+    cout << "keygen" << endl;
+    aliceHexPlainText = new unsigned char[messageHexSize];
+    bobHexPlainText = new unsigned char[messageHexSize];
 }
 
 bool NS_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
@@ -50,24 +51,31 @@ bool NS_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     //// endcoding ////
     system_clock::time_point encodingStartTime = system_clock::now();
     
-    NTL::ZZ aliceZZText(aliceNumber);
-    NTL::ZZ bobZZText(bobNumber);
+    stringstream stream1;
+    stringstream stream2;
+    stream1 << setfill('0') << setw(messageHexSize-1) << hex << aliceNumber;
+    aliceHexPlainText = reinterpret_cast<const unsigned char*>(stream1.str().c_str());
+    stream2 << setfill('0') << setw(messageHexSize-1) << hex << bobNumber;
+    bobHexPlainText = reinterpret_cast<const unsigned char*>(stream2.str().c_str());
+    // NTL::ZZ aliceZZText(aliceNumber);
+    // NTL::ZZ bobZZText(bobNumber);
+
 
     system_clock::time_point encodingEndTime = system_clock::now();
     encodingTime += encodingEndTime - encodingStartTime;
 
     //// step 1 ////
     system_clock::time_point step1StartTime = system_clock::now();
-    NTL::ZZ aliceCipherText = ns.Enc(publicKey, aliceZZText); // Alice encrypts
+    unsigned char* aliceCipherText = ns.Enc(publicKey, aliceHexPlainText); // Alice encrypts
     system_clock::time_point step1EndTime = system_clock::now();
     step1Time += step1EndTime - step1StartTime;
     
     //// step 2 ////
     system_clock::time_point step2StartTime = system_clock::now();
-    NTL::ZZ bobCipherText = ns.Enc(publicKey, bobZZText);    // Bob encrypts
-    NTL::ZZ subResult = ns.Sub(publicKey, aliceCipherText, bobCipherText);  // subResult = Bob - Alice
-    NTL::ZZ s = ns.generate_random_element1(publicKey);    // scalar
-    NTL::ZZ res = ns.Scalar_Mul(publicKey, s, subResult); // res = s * subResult
+    unsigned char* bobCipherText = ns.Enc(publicKey, bobHexPlainText);    // Bob encrypts
+    unsigned char* subResult = ns.Sub(publicKey, aliceCipherText, bobCipherText);  // subResult = Bob - Alice
+    unsigned char* s = ns.generate_random_element4(ns.getMessageBits());    // scalar
+    unsigned char* res = ns.Scalar_Mul(publicKey, s, subResult); // res = s * subResult
     system_clock::time_point step2EndTime = system_clock::now();
     step2Time += step2EndTime - step2StartTime;
 
@@ -79,12 +87,13 @@ bool NS_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     system_clock::time_point totalEndTime = system_clock::now();
     totalTime += totalEndTime - totalStartTime;
 
-    // std::cout << "aliceCipherText : " << aliceCipherText << std::endl;
-    // std::cout << "bobCipherText : " << bobCipherText << std::endl;
-    // std::cout << "subResult : " << subResult << std::endl;
-    // std::cout << "s: " << s << std::endl;
-    // std::cout << "res : " << res << std::endl;
-    // std::cout << "compare : " << compareResult << std::endl;
+    std::cout << "aliceCipherText : " << aliceCipherText << std::endl;
+    std::cout << "bobCipherText : " << bobCipherText << std::endl;
+    std::cout << "subResult : " << subResult << std::endl;
+    std::cout << "s: " << s << std::endl;
+    std::cout << "res : " << res << std::endl;
+    std::cout << "g : " << publicKey.g << std::endl;
+    std::cout << "compare : " << compareResult << std::endl;
     return compareResult;
 }   
 
