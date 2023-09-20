@@ -7,8 +7,10 @@
 NS::NS(){
     bn_ctx = BN_CTX_new();
     lambda = 3072;
-    k = 10;
-    B = 32;
+    // k = 10;
+    // B = 32;
+    k = 30;
+    B = 12;
     messageBits = 256; 
 }
 NS::NS(int _lambda, int _k, int _B){
@@ -117,6 +119,7 @@ void NS::KeyGen(NS_PK &pk, NS_SK &sk){
     BN_one(v);
 
     for (int i = 0; i < this->k; i++) {
+        std::cout << "primes " << i << " : " << BN_get_word(sk.primes[i]) << std::endl;
         if (i < this->k / 2) {
             BN_mul(u, u, sk.primes[i], bn_ctx);
         } else {
@@ -132,14 +135,12 @@ void NS::KeyGen(NS_PK &pk, NS_SK &sk){
     do{
         // a의 비트 수 : 타켓 p 비트 수 / 2  - u 비트 수 - 1 
         BN_generate_prime_ex(a, this->lambda/2 - BN_num_bits(u) - 1, 0, NULL, NULL, NULL);
-        
         BN_lshift1(a, a);
         BN_mul(a, u, a, bn_ctx);
         BN_add(sk.p, a, BN_value_one());
 
-    }while(BN_num_bits(sk.p) != this->lambda/2 || BN_is_prime_ex(sk.p, BN_prime_checks_for_size(BN_num_bits(sk.p)), bn_ctx, NULL));
+    }while(BN_num_bits(sk.p) != this->lambda/2 || !BN_is_prime_ex(sk.p, BN_prime_checks_for_size(BN_num_bits(sk.p)), bn_ctx, NULL));
 
-    
     do{
         do{     
             BN_generate_prime_ex(b, this->lambda/2 - BN_num_bits(v), 0, NULL, NULL, NULL);
@@ -147,12 +148,11 @@ void NS::KeyGen(NS_PK &pk, NS_SK &sk){
             BN_mul(b, v, b, bn_ctx);
             BN_add(sk.q, b, BN_value_one());
 
-        }while(BN_is_prime_ex(sk.p, BN_prime_checks_for_size(BN_num_bits(sk.p)), bn_ctx, NULL));
+        }while(!BN_is_prime_ex(sk.q, BN_prime_checks_for_size(BN_num_bits(sk.q)), bn_ctx, NULL));
 
         BN_mul(pk.n, sk.p, sk.q, bn_ctx);
     }while(BN_num_bits(pk.n) != this->lambda);
    
-    
     BN_free(a);
     BN_free(b);
     pk.sigma = BN_new();
@@ -168,42 +168,53 @@ void NS::KeyGen(NS_PK &pk, NS_SK &sk){
 
     BN_sub(p_minus_one, sk.p, BN_value_one());
     BN_sub(q_minus_one, sk.q, BN_value_one());
-    BN_mul(pi_n, p_minus_one, q_minus_one, bn_ctx);
+    BN_mod_mul(pi_n, p_minus_one, q_minus_one, pk.n, bn_ctx);
 
     BN_free(p_minus_one);
     BN_free(q_minus_one);
      
     bool usable_g;
-
+    
     BIGNUM *result = BN_new();
+    BIGNUM *pi_n_over_pi = BN_new();
+    BIGNUM *inv_pi = BN_new();
+    
     do{
         usable_g = true;
         pk.g = this->generate_random_element1(pk.n);
 
         for (int i = 0; i < this->k; i++) {
-            BN_mod_exp(result, pk.g, sk.primes[i], pk.n, bn_ctx);
-            if(!BN_cmp(result, BN_value_one())){
+            BN_mod_inverse(inv_pi, sk.primes[i], pk.n, bn_ctx);
+            BN_mod_mul(pi_n_over_pi, pi_n, inv_pi, pk.n, bn_ctx);
+            BN_mod_exp(result, pk.g, pi_n_over_pi, pk.n, bn_ctx);
+
+            if(BN_is_one(result)){
                 usable_g = false;
                 BN_free(pk.g);
                 break;
             }
         }
     } while(!usable_g);
- 
+
+    BN_free(pi_n);
     BN_free(result);
+    BN_free(pi_n_over_pi);
+    BN_free(inv_pi);
 }
 
 BIGNUM* NS::Enc(const NS_PK pk, const BIGNUM* m){
-    BIGNUM *c, *x = BN_new();
+    BIGNUM *c = BN_new();
+    BIGNUM *x = BN_new();
     BIGNUM *two = BN_new();
+
     BN_set_word(two, 2);
+
     do
     {
         x = this->generate_random_element1(pk.n);
     } while (BN_cmp(x, two) <= 0); 
     BN_free(two);
 
-    c = BN_new();
     BIGNUM *x_sigma = BN_new(); 
     BIGNUM *g_m = BN_new(); 
     
@@ -232,6 +243,49 @@ unsigned char * NS::Enc(const NS_PK pk, const unsigned char * M){
     return C;
 }
 
+// wrong implementation
+// Exhaustive method
+BIGNUM* NS::Dec(const NS_PK pk, const NS_SK sk, const BIGNUM* c){
+    std::cout<<"dec"<<std::endl;
+    BIGNUM* pi_n = BN_new();
+    BIGNUM* p_1 = BN_new();
+    BIGNUM* q_1 = BN_new();
+    
+    BN_mod_sub(p_1, sk.p, BN_value_one(), pk.n, bn_ctx);
+    BN_mod_sub(q_1, sk.q, BN_value_one(), pk.n, bn_ctx);
+    BN_mod_mul(pi_n, p_1, q_1, pk.n, bn_ctx);
+
+    BN_free(p_1);
+    BN_free(q_1);
+    
+    BIGNUM *inv_sigma = BN_new();
+    BIGNUM *e = BN_new();
+    BIGNUM *res = BN_new();
+
+    BN_mod_inverse(inv_sigma, pk.sigma, pk.n, bn_ctx);
+    BN_mod_mul(e, pi_n, inv_sigma, pk.n, bn_ctx);
+    BN_mod_exp(res, c, e, pk.n, bn_ctx);
+
+    BIGNUM* g_i = BN_new();
+    BIGNUM* I = BN_new();
+
+    // res = c^e mod n = g^m mod n
+    // find i, s.t. g^i = g^m, 0<=i<=messageBits
+    for(int i=0; i<INT_MAX; i++){
+        BN_set_word(I, i);
+        BN_mod_mul(I, I, e, pk.n, bn_ctx);
+        BN_mod_exp(g_i, pk.g, I, pk.n, bn_ctx);
+
+        if(!BN_cmp(res, g_i))
+            std::cout << "dec : " << i << std::endl;
+    }
+
+    BN_free(pi_n);
+    BN_free(inv_sigma);
+    BN_free(e);
+    return I;
+
+}
 
 BIGNUM* NS::Add(const NS_PK pk, const BIGNUM* c1, const BIGNUM* c2){
     BIGNUM *c = BN_new();
@@ -333,6 +387,8 @@ bool NS::isZero(const NS_PK pk, const NS_SK sk, const BIGNUM* c){
     BIGNUM *res = BN_new();
 
     BN_mod_inverse(inv_sigma, pk.sigma, pk.n, bn_ctx);
+
+
     BN_mod_mul(e, pi_n, inv_sigma, pk.n, bn_ctx);
     BN_mod_exp(res, c, e, pk.n, bn_ctx);
 
@@ -340,12 +396,8 @@ bool NS::isZero(const NS_PK pk, const NS_SK sk, const BIGNUM* c){
     BN_free(inv_sigma);
     BN_free(e);
 
-    unsigned char * cres = new unsigned char[lambda/4];
-    memset(cres, 0x00, lambda/4);
-    strcpy((char*)cres, BN_bn2hex(res));
 
-    std::cout << "ns says : " << cres << std::endl; 
-    if(!BN_cmp(res, BN_value_one())){
+    if(BN_is_one(res)){
         BN_free(res);
         return true;
     }
@@ -362,6 +414,29 @@ bool NS::isZero(const NS_PK pk, const NS_SK sk, const unsigned char * C){
 }
 
 // g++ NS.cpp -o NS -lssl -lcrypto -lntl -lgmp -lpthread
+
+
+// int main(){
+//     NS ns = NS();
+//     NS_PK pk;
+//     NS_SK sk;
+//     ns.KeyGen(pk, sk);
+
+//     BIGNUM *aliceBnText = BN_new();
+//     BIGNUM *bobBnText = BN_new();
+//     BN_set_word(aliceBnText, 5);
+//     BN_set_word(bobBnText, 5);
+
+//     BIGNUM* aliceCipherText = ns.Enc(pk, aliceBnText);
+//     BIGNUM* aliceDecrypt = ns.Dec(pk, sk, aliceBnText);
+
+//     BIGNUM* bobCipherText = ns.Enc(pk, bobBnText);
+//     BIGNUM* bobDecrypt = ns.Dec(pk, sk, bobBnText);
+
+//     BIGNUM* subResult = ns.Sub(pk, aliceCipherText, bobCipherText); 
+//     BIGNUM* subDecrypt = ns.Dec(pk, sk, subResult);
+// }
+
 
 
 // NTL::ZZ NS::Enc(const NS_PK pk, const NTL::ZZ m){
