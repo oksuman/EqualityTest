@@ -31,8 +31,6 @@ int NS::getMessageBits(){
 
 int NS::getRandomBits(int minBits, int maxBits){
     int range = maxBits - minBits +1;
-    std::cout << "range : " << range << std::endl;
-    std::cout << "return bit : " << minBits + std::rand() % range << std::endl;
     return minBits + std::rand() % range;
 }
 
@@ -102,13 +100,12 @@ unsigned char* NS::generate_random_element2(const BIGNUM* bnd){
 BIGNUM* NS::generate_random_element3(int bits){
     BIGNUM *random = BN_new();
     int bitSize = getRandomBits(2, bits);
-    
-    std::cout << "random bit size : " << bitSize << std::endl;
 
-    if (!BN_rand(random, bitSize, BN_RAND_TOP_ANY, BN_RAND_BOTTOM_ANY))
-        handleErrors();
-
-    std::cout << "random  : " << BN_get_word(random) << std::endl;
+    do
+    {
+        if (!BN_rand(random, bitSize, BN_RAND_TOP_ANY, BN_RAND_BOTTOM_ANY))
+            handleErrors();
+    } while (BN_is_zero(random));
     return random;
 }
 
@@ -128,7 +125,6 @@ void NS::KeyGen(NS_PK &pk, NS_SK &sk){
     BN_one(v);
 
     for (int i = 0; i < this->k; i++) {
-        std::cout << "primes " << i << " : " << BN_get_word(sk.primes[i]) << std::endl;
         if (i < this->k / 2) {
             BN_mul(u, u, sk.primes[i], bn_ctx);
         } else {
@@ -149,7 +145,7 @@ void NS::KeyGen(NS_PK &pk, NS_SK &sk){
         BN_add(sk.p, a, BN_value_one());
 
     }while(BN_num_bits(sk.p) != this->lambda/2 || !BN_is_prime_ex(sk.p, BN_prime_checks_for_size(BN_num_bits(sk.p)), bn_ctx, NULL));
-
+    //BN_num_bits(sk.p) != this->lambda/2 ||
     do{
         do{     
             BN_generate_prime_ex(b, this->lambda/2 - BN_num_bits(v), 0, NULL, NULL, NULL);
@@ -158,7 +154,6 @@ void NS::KeyGen(NS_PK &pk, NS_SK &sk){
             BN_add(sk.q, b, BN_value_one());
 
         }while(!BN_is_prime_ex(sk.q, BN_prime_checks_for_size(BN_num_bits(sk.q)), bn_ctx, NULL));
-
         BN_mul(pk.n, sk.p, sk.q, bn_ctx);
     }while(BN_num_bits(pk.n) != this->lambda);
    
@@ -166,7 +161,6 @@ void NS::KeyGen(NS_PK &pk, NS_SK &sk){
     BN_free(b);
     pk.sigma = BN_new();
     BN_mul(pk.sigma, u, v, bn_ctx);
-    std::cout << "# of bits sigma : " << BN_num_bits(pk.sigma) << std::endl;
     
     BN_free(u);
     BN_free(v);
@@ -220,13 +214,8 @@ BIGNUM* NS::Enc(const NS_PK pk, const BIGNUM* m){
     do
     {
         x = this->generate_random_element1(pk.n);
-        std::cout << "x bits : " << BN_num_bits(x) << std::endl;
     } while (BN_num_bits(x) < 2); 
     BN_free(two);
-    
-    std::cout << "out of loop _ x bits : " << BN_num_bits(x) << std::endl;
-
-    
 
     BIGNUM *x_sigma = BN_new(); 
     BIGNUM *g_m = BN_new(); 
@@ -348,7 +337,6 @@ unsigned char * NS::Sub(const NS_PK pk, const unsigned char * C1, const unsigned
     BN_hex2bn(&c2, (char*)C2);
     
     strcpy((char*)C, BN_bn2hex(Sub(pk, c1, c2)));
-    std::cout << "C : " << C << std::endl;
 
     BN_free(c1);
     BN_free(c2);

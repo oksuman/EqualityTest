@@ -50,50 +50,46 @@ bool NS_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     //// endcoding ////
     system_clock::time_point encodingStartTime = system_clock::now();
     
-    // stringstream stream1;
-    // stringstream stream2;
-    // stream1 << setfill('0') << setw(messageHexSize-1) << hex << aliceNumber;
-    // aliceHexPlainText = reinterpret_cast<const unsigned char*>(stream1.str().c_str());
-    // stream2 << setfill('0') << setw(messageHexSize-1) << hex << bobNumber;
-    // bobHexPlainText = reinterpret_cast<const unsigned char*>(stream2.str().c_str());
-    // NTL::ZZ aliceZZText(aliceNumber);
-    // NTL::ZZ bobZZText(bobNumber);
-    BIGNUM *aliceBnText = BN_new();
-    BIGNUM *bobBnText = BN_new();
-    BN_set_word(aliceBnText, aliceNumber);
-    BN_set_word(bobBnText, bobNumber);
+    stringstream stream1;
+    stringstream stream2;
+    stream1 << setfill('0') << setw(messageHexSize-1) << hex << aliceNumber;
+    aliceHexPlainText = reinterpret_cast<const unsigned char*>(stream1.str().c_str());
+    stream2 << setfill('0') << setw(messageHexSize-1) << hex << bobNumber;
+    bobHexPlainText = reinterpret_cast<const unsigned char*>(stream2.str().c_str());
+    NTL::ZZ aliceZZText(aliceNumber);
+    NTL::ZZ bobZZText(bobNumber);
+    // BIGNUM *aliceBnText = BN_new();
+    // BIGNUM *bobBnText = BN_new();
+    // BN_set_word(aliceBnText, aliceNumber);
+    // BN_set_word(bobBnText, bobNumber);
 
     system_clock::time_point encodingEndTime = system_clock::now();
     encodingTime += encodingEndTime - encodingStartTime;
 
     //// step 1 ////
     system_clock::time_point step1StartTime = system_clock::now();
-    //unsigned char* aliceCipherText = ns.Enc(publicKey, aliceHexPlainText); // Alice encrypts
-    BIGNUM* aliceCipherText = ns.Enc(publicKey, aliceBnText); // Alice encrypts
+    unsigned char* aliceCipherText = ns.Enc(publicKey, aliceHexPlainText); // Alice encrypts
+    // BIGNUM* aliceCipherText = ns.Enc(publicKey, aliceBnText); // Alice encrypts
     system_clock::time_point step1EndTime = system_clock::now();
     step1Time += step1EndTime - step1StartTime;
     
     //// step 2 ////
+
     system_clock::time_point step2StartTime = system_clock::now();
-    // unsigned char* bobCipherText = ns.Enc(publicKey, bobHexPlainText);    // Bob encrypts
-    // unsigned char* subResult = ns.Sub(publicKey, aliceCipherText, bobCipherText);  // subResult = Bob - Alice
-    // unsigned char* s = ns.generate_random_element4(ns.getMessageBits());    // scalar
-    // unsigned char* res = ns.Scalar_Mul(publicKey, s, subResult); // res = s * subResult
+    unsigned char* bobCipherText = ns.Enc(publicKey, bobHexPlainText);    // Bob encrypts
+    unsigned char* subResult = ns.Sub(publicKey, aliceCipherText, bobCipherText);  // subResult = Bob - Alice
+    unsigned char* s = ns.generate_random_element4(ns.getMessageBits());    // scalar
+    unsigned char* res = ns.Scalar_Mul(publicKey, s, subResult); // res = s * subResult
     
-    BIGNUM* bobCipherText = ns.Enc(publicKey, bobBnText);    // Bob encrypts
-    BIGNUM* subResult = ns.Sub(publicKey, aliceCipherText, bobCipherText);  // subResult = Bob - Alice
-    
-    bool compareResult2 = ns.isZero(publicKey, secretKey, subResult);
-    if(compareResult2)
-        cout << "true" << endl;
-    BIGNUM* s = ns.generate_random_element3(ns.getMessageBits());    // scalar
-    BIGNUM* res = ns.Scalar_Mul(publicKey, s, subResult); // res = s * subResult
+    // BIGNUM* bobCipherText = ns.Enc(publicKey, bobBnText);    // Bob encrypts
+    // BIGNUM* subResult = ns.Sub(publicKey, aliceCipherText, bobCipherText);  // subResult = Bob - Alice
+    // BIGNUM* s = ns.generate_random_element3(ns.getMessageBits());    // scalar
+    // BIGNUM* res = ns.Scalar_Mul(publicKey, s, subResult); // res = s * subResult
     system_clock::time_point step2EndTime = system_clock::now();
     step2Time += step2EndTime - step2StartTime;
 
     //// step 3 ////
     system_clock::time_point step3StartTime = system_clock::now();
-    // bool compareResult = ns.isZero(publicKey, secretKey, res); // Alice decrypts
     bool compareResult = ns.isZero(publicKey, secretKey, res); // Alice decrypts
     system_clock::time_point step3EndTime = system_clock::now();
     step3Time += step3EndTime - step3StartTime;
