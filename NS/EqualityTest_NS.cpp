@@ -82,6 +82,10 @@ bool NS_EqualityTest::equalityTest(int aliceNumber, int bobNumber){
     
     BIGNUM* bobCipherText = ns.Enc(publicKey, bobBnText);    // Bob encrypts
     BIGNUM* subResult = ns.Sub(publicKey, aliceCipherText, bobCipherText);  // subResult = Bob - Alice
+    
+    bool compareResult2 = ns.isZero(publicKey, secretKey, subResult);
+    if(compareResult2)
+        cout << "true" << endl;
     BIGNUM* s = ns.generate_random_element3(ns.getMessageBits());    // scalar
     BIGNUM* res = ns.Scalar_Mul(publicKey, s, subResult); // res = s * subResult
     system_clock::time_point step2EndTime = system_clock::now();

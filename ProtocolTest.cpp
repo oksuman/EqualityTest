@@ -56,8 +56,8 @@ int main(int argc, char* argv[]){
         // 10비트 정수 생성 
         std::uint16_t random10A = dist10(gen);
         std::uint16_t random10B = dist10(gen);
-        // std::uint16_t random10A = 110;
-        // std::uint16_t random10B = 110;
+        // std::uint16_t random10A = 750;
+        // std::uint16_t random10B = 741;
         if(random10A == random10B){
             exactList.push_back(random10A);
         }

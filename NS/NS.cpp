@@ -31,6 +31,8 @@ int NS::getMessageBits(){
 
 int NS::getRandomBits(int minBits, int maxBits){
     int range = maxBits - minBits +1;
+    std::cout << "range : " << range << std::endl;
+    std::cout << "return bit : " << minBits + std::rand() % range << std::endl;
     return minBits + std::rand() % range;
 }
 
@@ -86,6 +88,9 @@ BIGNUM* NS::generate_random_element1(const BIGNUM* bnd){
         handleErrors();
     return random;
 }
+    // unsigned char * rand = new unsigned char[3072/4];
+    // memset(rand, 0x00, 3072/4);
+    // strcpy((char*)rand, BN_bn2hex(random));
 
 unsigned char* NS::generate_random_element2(const BIGNUM* bnd){
     unsigned char * ret = new unsigned char[lambda/4];
@@ -97,9 +102,13 @@ unsigned char* NS::generate_random_element2(const BIGNUM* bnd){
 BIGNUM* NS::generate_random_element3(int bits){
     BIGNUM *random = BN_new();
     int bitSize = getRandomBits(2, bits);
+    
+    std::cout << "random bit size : " << bitSize << std::endl;
 
     if (!BN_rand(random, bitSize, BN_RAND_TOP_ANY, BN_RAND_BOTTOM_ANY))
         handleErrors();
+
+    std::cout << "random  : " << BN_get_word(random) << std::endl;
     return random;
 }
 
@@ -208,12 +217,16 @@ BIGNUM* NS::Enc(const NS_PK pk, const BIGNUM* m){
     BIGNUM *two = BN_new();
 
     BN_set_word(two, 2);
-
     do
     {
         x = this->generate_random_element1(pk.n);
-    } while (BN_cmp(x, two) <= 0); 
+        std::cout << "x bits : " << BN_num_bits(x) << std::endl;
+    } while (BN_num_bits(x) < 2); 
     BN_free(two);
+    
+    std::cout << "out of loop _ x bits : " << BN_num_bits(x) << std::endl;
+
+    
 
     BIGNUM *x_sigma = BN_new(); 
     BIGNUM *g_m = BN_new(); 
@@ -245,47 +258,47 @@ unsigned char * NS::Enc(const NS_PK pk, const unsigned char * M){
 
 // wrong implementation
 // Exhaustive method
-BIGNUM* NS::Dec(const NS_PK pk, const NS_SK sk, const BIGNUM* c){
-    std::cout<<"dec"<<std::endl;
-    BIGNUM* pi_n = BN_new();
-    BIGNUM* p_1 = BN_new();
-    BIGNUM* q_1 = BN_new();
+// BIGNUM* NS::Dec(const NS_PK pk, const NS_SK sk, const BIGNUM* c){
+//     std::cout<<"dec"<<std::endl;
+//     BIGNUM* pi_n = BN_new();
+//     BIGNUM* p_1 = BN_new();
+//     BIGNUM* q_1 = BN_new();
     
-    BN_mod_sub(p_1, sk.p, BN_value_one(), pk.n, bn_ctx);
-    BN_mod_sub(q_1, sk.q, BN_value_one(), pk.n, bn_ctx);
-    BN_mod_mul(pi_n, p_1, q_1, pk.n, bn_ctx);
+//     BN_mod_sub(p_1, sk.p, BN_value_one(), pk.n, bn_ctx);
+//     BN_mod_sub(q_1, sk.q, BN_value_one(), pk.n, bn_ctx);
+//     BN_mod_mul(pi_n, p_1, q_1, pk.n, bn_ctx);
 
-    BN_free(p_1);
-    BN_free(q_1);
+//     BN_free(p_1);
+//     BN_free(q_1);
     
-    BIGNUM *inv_sigma = BN_new();
-    BIGNUM *e = BN_new();
-    BIGNUM *res = BN_new();
+//     BIGNUM *inv_sigma = BN_new();
+//     BIGNUM *e = BN_new();
+//     BIGNUM *res = BN_new();
 
-    BN_mod_inverse(inv_sigma, pk.sigma, pk.n, bn_ctx);
-    BN_mod_mul(e, pi_n, inv_sigma, pk.n, bn_ctx);
-    BN_mod_exp(res, c, e, pk.n, bn_ctx);
+//     BN_mod_inverse(inv_sigma, pk.sigma, pk.n, bn_ctx);
+//     BN_mod_mul(e, pi_n, inv_sigma, pk.n, bn_ctx);
+//     BN_mod_exp(res, c, e, pk.n, bn_ctx);
 
-    BIGNUM* g_i = BN_new();
-    BIGNUM* I = BN_new();
+//     BIGNUM* g_i = BN_new();
+//     BIGNUM* I = BN_new();
 
-    // res = c^e mod n = g^m mod n
-    // find i, s.t. g^i = g^m, 0<=i<=messageBits
-    for(int i=0; i<INT_MAX; i++){
-        BN_set_word(I, i);
-        BN_mod_mul(I, I, e, pk.n, bn_ctx);
-        BN_mod_exp(g_i, pk.g, I, pk.n, bn_ctx);
+//     // res = c^e mod n = g^m mod n
+//     // find i, s.t. g^i = g^m, 0<=i<=messageBits
+//     for(int i=0; i<INT_MAX; i++){
+//         BN_set_word(I, i);
+//         BN_mod_mul(I, I, e, pk.n, bn_ctx);
+//         BN_mod_exp(g_i, pk.g, I, pk.n, bn_ctx);
 
-        if(!BN_cmp(res, g_i))
-            std::cout << "dec : " << i << std::endl;
-    }
+//         if(!BN_cmp(res, g_i))
+//             std::cout << "dec : " << i << std::endl;
+//     }
 
-    BN_free(pi_n);
-    BN_free(inv_sigma);
-    BN_free(e);
-    return I;
+//     BN_free(pi_n);
+//     BN_free(inv_sigma);
+//     BN_free(e);
+//     return I;
 
-}
+// }
 
 BIGNUM* NS::Add(const NS_PK pk, const BIGNUM* c1, const BIGNUM* c2){
     BIGNUM *c = BN_new();
