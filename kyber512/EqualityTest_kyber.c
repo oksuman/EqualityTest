@@ -66,7 +66,6 @@ int main(int argc, char* argv[]){
     printf("\n");
     
 
-    indcpa_dec2(msg4, ctx4, sk);
     printf("msg4 contents: ");
     for (int i = 0; i < KYBER_INDCPA_MSGBYTES; i++) {
         printf("%02X ", msg4[i]);
@@ -80,3 +79,4 @@ int main(int argc, char* argv[]){
 
 
 
+q
