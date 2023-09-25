@@ -21,27 +21,28 @@ int main(int argc, char* argv[]){
     unsigned char msg1[KYBER_INDCPA_MSGBYTES] = {0}; 
     unsigned char msg2[KYBER_INDCPA_MSGBYTES] = {0};
     unsigned char msg3[KYBER_INDCPA_MSGBYTES] = {0};
+    unsigned char msg4[KYBER_INDCPA_MSGBYTES] = {0};
 
-    msg1[KYBER_INDCPA_MSGBYTES-1] = 197;
-    msg2[KYBER_INDCPA_MSGBYTES-1] = 197;
+
+    msg1[KYBER_INDCPA_MSGBYTES-1] = 20;
+    msg2[KYBER_INDCPA_MSGBYTES-1] = 20;
 
     
     unsigned char ctx1[KYBER_INDCPA_BYTES];
     unsigned char ctx2[KYBER_INDCPA_BYTES];
     unsigned char ctx3[KYBER_INDCPA_BYTES];
+    unsigned char ctx4[KYBER_INDCPA_BYTES];
 
     unsigned char pk[KYBER_INDCPA_PUBLICKEYBYTES];
     unsigned char sk[KYBER_INDCPA_SECRETKEYBYTES];
-    printf("its okay 1\n");
+
     indcpa_keypair(pk, sk);
 
-    printf("its okay 2\n");
     indcpa_enc(ctx1, msg1, pk, coin);
     indcpa_enc(ctx2, msg2, pk, coin);
 
-
-    printf("its okay 3\n");
     add(ctx3, ctx1, ctx2);
+    randomize_poly(ctx4, ctx3, 1);
     
     indcpa_dec(msg3, ctx3, sk);
     
@@ -51,7 +52,6 @@ int main(int argc, char* argv[]){
         printf("%02X ", msg1[i]);
     }
     printf("\n");
-    
     
     printf("msg2 contents: ");
     for (int i = 0; i < KYBER_INDCPA_MSGBYTES; i++) {
@@ -64,9 +64,15 @@ int main(int argc, char* argv[]){
         printf("%02X ", msg3[i]);
     }
     printf("\n");
+    
+
+    indcpa_dec2(msg4, ctx4, sk);
+    printf("msg4 contents: ");
+    for (int i = 0; i < KYBER_INDCPA_MSGBYTES; i++) {
+        printf("%02X ", msg4[i]);
+    }
+    printf("\n");
   
-    
-    
     return 0;
 }
 

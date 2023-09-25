@@ -309,6 +309,11 @@ void indcpa_dec(unsigned char *m,
   poly_tomsg(m, &mp);
 }
 
+
+/// @brief add on
+/// @param c output ciphertext
+/// @param c1 operand 
+/// @param c2 operand
 void add(unsigned char *c, unsigned char*c1, unsigned char* c2){
   polyvec b1;
   poly v1;
@@ -323,10 +328,77 @@ void add(unsigned char *c, unsigned char*c1, unsigned char* c2){
   poly v;
   polyvec_add(&b,&b1,&b2);
   poly_add(&v,&v1,&v2);
+  
+  polyvec_reduce(&b);
+  poly_reduce(&v);
 
   pack_ciphertext(c, &b, &v);
 }
 
-void random_scalar_mul(){
-  
+void shuffle(int16_t *array, int size) {
+  srand(time(NULL)); 
+  for (int i = size - 1; i > 0; i--) {
+      int j = rand() % (i + 1); 
+
+      int16_t temp = array[i];
+      array[i] = array[j];
+      array[j] = temp;
+  }
+}
+
+poly generate_random_poly(int hwt){
+  poly random_poly;
+
+  for (int i = 0; i < KYBER_N; i++) {
+      if (i < hwt) {
+          random_poly.coeffs[i] = 1;
+      } else {
+          random_poly.coeffs[i] = 0;
+      }
+  }
+  shuffle(random_poly.coeffs, KYBER_N);
+  return random_poly;
+}
+
+void randomize_poly(unsigned char *r, unsigned char*c, int hwt){
+  // uniformly sample a poly from HWT(h) 
+  // KYBER_N - hwt 개의 0
+  // hwt 개의 1
+  // poly random_poly = generate_random_poly(hwt);
+  poly random_poly;
+  for(int i=0; i<KYBER_N-1; i++)
+    random_poly.coeffs[i] = 0;
+  random_poly.coeffs[KYBER_N-1] = 1;
+  // for (int i = 0; i < KYBER_N; i++) {
+  //    printf("Value: %d\n", random_poly.coeffs[i]);
+  // }
+  polyvec b;
+  poly v;
+  unpack_ciphertext(&b, &v, c);
+
+  printf("\n");
+  printf("rnd poly contents: ");
+  for (int i = 0; i < KYBER_N; i++) {
+    printf("%d", random_poly.coeffs[i]);
+  }
+  printf("\n");
+
+  polyvec b_res;
+  poly v_res;
+
+  polyvec_ntt(&b);
+  poly_ntt(&random_poly);
+
+  for(int i=0; i<KYBER_K; i++){
+    poly_basemul(&b_res.vec[i], &b.vec[i], &random_poly);
+  }
+  polyvec_reduce(&b_res);
+  polyvec_invntt(&b_res);
+
+  poly_ntt(&v);
+  poly_basemul(&v_res, &v, &random_poly);
+  poly_reduce(&v_res);
+  poly_invntt(&v_res);
+
+  pack_ciphertext(r, &b_res, &v_res);
 }
